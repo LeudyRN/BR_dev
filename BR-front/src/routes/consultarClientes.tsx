@@ -1,5 +1,5 @@
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { useEffect, useState } from "react";
+import axios from "axios"; // ✅ Se agrega axios para llamadas a la API
 import FiltrosClientes from "../components/FiltrosClientes";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box, Typography, Divider, TablePagination } from "@mui/material";
 import { TextField, Button } from "@mui/material";
@@ -16,69 +16,39 @@ interface Cliente {
   fechaVenc: string;
 }
 
-/** Lista original de clientes prueba*/
-const clientesMock: Cliente[] = [
-  { id: 1, nombre: "Juan Pérez", cedula: "22222220", estado: "activo", segmento: "1", categoria: "bajo", tipoPersona: "fisica", fechaVenc: "12/febrero/2026" },
-  { id: 2, nombre: "Ana Gómez", cedula: "22222220", estado: "inactivo", segmento: "2", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2028" },
-  { id: 3, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 4, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 5, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 6, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 7, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 8, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 9, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 10, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 11, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 12, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 13, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 14, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 15, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 16, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 17, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 18, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 19, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 20, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 21, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 22, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 23, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 24, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 25, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 26, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 27, nombre: "Carlos López", cedula: "22222220", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-  { id: 28, nombre: "Carlos López", cedula: "323232332312", estado: "activo", segmento: "7", categoria: "alto", tipoPersona: "empresa", fechaVenc: "12/febrero/2036" },
-];
-
 /** Componente Principal */
 function ConsultaClientes() {
-  const [clientesFiltrados, setClientesFiltrados] = useState(clientesMock);
+  const [clientesFiltrados, setClientesFiltrados] = useState<Cliente[]>([]);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [cedulaBusqueda, setCedulaBusqueda] = useState("");
 
-  /** 🚀 Filtrar clientes */
+  /**  Cargar clientes desde la API al montar */
+  useEffect(() => {
+    axios.get("http://localhost:5000/api/clientes") //  Conexión con la API
+      .then((response) => setClientesFiltrados(response.data))
+      .catch((error) => console.error("Error al obtener clientes:", error));
+  }, []);
+
+  /**  Filtrar clientes desde la API */
   const handleFilterChange = (filtros: { estado: string; segmento: string; categoria: string; tipoPersona: string }) => {
-    const filtrados = clientesMock.filter(
-      (cliente) =>
-        (filtros.estado === "" || cliente.estado === filtros.estado) &&
-        (filtros.segmento === "" || cliente.segmento === filtros.segmento) &&
-        (filtros.categoria === "" || cliente.categoria === filtros.categoria) &&
-        (filtros.tipoPersona === "" || cliente.tipoPersona === filtros.tipoPersona)
-    );
+    axios.get("http://localhost:5000/api/clientes", { params: filtros }) //  Se envían filtros como parámetros
+      .then((response) => setClientesFiltrados(response.data))
+      .catch((error) => console.error("Error al filtrar clientes:", error));
 
-    // Si hay una cédula ingresada, filtramos por ella
-    const resultadoFinal = cedulaBusqueda ? filtrados.filter((cliente) => cliente.cedula === cedulaBusqueda) : filtrados;
-
-    setClientesFiltrados(resultadoFinal);
     setPage(0);
   };
 
-  /**  Búsqueda por cédula */
+  /**  Búsqueda por cédula desde la API */
   const handleBuscarPorCedula = () => {
     if (cedulaBusqueda === "") {
-      setClientesFiltrados(clientesMock);
+      axios.get("http://localhost:5000/api/clientes")
+        .then((response) => setClientesFiltrados(response.data))
+        .catch((error) => console.error("Error al obtener clientes:", error));
     } else {
-      const resultado = clientesMock.filter((cliente) => cliente.cedula === cedulaBusqueda);
-      setClientesFiltrados(resultado);
+      axios.get(`http://localhost:5000/api/clientes/${cedulaBusqueda}`) //  Se consulta por cédula
+        .then((response) => setClientesFiltrados([response.data])) //  Se guarda en un array para la tabla
+        .catch((error) => console.error("Error en la búsqueda por cédula:", error));
     }
     setPage(0);
   };
@@ -127,7 +97,7 @@ function ConsultaClientes() {
                 <TableRow>
                   <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>ID</TableCell>
                   <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Nombre</TableCell>
-                  <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Cédula</TableCell>
+                  <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Cédula/RNC</TableCell>
                   <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Estado</TableCell>
                   <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Segmento</TableCell>
                   <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Riesgo</TableCell>
