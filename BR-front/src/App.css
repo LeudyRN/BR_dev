@@ -1,0 +1,14 @@
+/* 🎨 Personalizar el scrollbar */
+::-webkit-scrollbar {
+  width: 10px; /* Ancho del scrollbar */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #002f6c; /* Azul elegante */
+  border-radius: 6px; /* Bordes redondeados */
+  border: 2px solid #f5f6fa; /* Borde para mejor diseño */
+}
+
+::-webkit-scrollbar-track {
+  background-color: #e0e0e0; /* Color de fondo más suave */
+}
