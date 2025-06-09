@@ -43,7 +43,7 @@ function CambioSegmento() {
 
       <Paper elevation={3} sx={{ p: 4, borderRadius: 4 }}>
         <Typography variant="h5" fontWeight="bold" gutterBottom color="primary">
-          Cambio de Segmento
+         Gestión de Segmento
         </Typography>
 
         <Divider sx={{ my: 2 }} />

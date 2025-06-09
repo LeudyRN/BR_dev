@@ -47,6 +47,7 @@ function FiltrosClientes({ onFilter }: { onFilter: (filtros: { estado: string; s
           <MenuItem value="">Todos</MenuItem>
           <MenuItem value="activo">Activos</MenuItem>
           <MenuItem value="inactivo">Inactivos</MenuItem>
+          <MenuItem value="creado">Creados</MenuItem>
         </Select>
       </FormControl>
 
