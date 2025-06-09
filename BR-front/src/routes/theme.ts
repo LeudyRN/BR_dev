@@ -2,12 +2,8 @@ import { createTheme } from "@mui/material/styles";
 
 const theme = createTheme({
   palette: {
-    primary: {
-      main: "#003366",
-    },
-    secondary: {
-      main: "#FFC72C",
-    },
+    primary: { main: "#003366" },
+    secondary: { main: "#FFC72C" },
     background: {
       default: "#F4F6F8",
       paper: "#FFFFFF",
@@ -28,6 +24,24 @@ const theme = createTheme({
     borderRadius: 8,
   },
   components: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        body: {
+          backgroundColor: "#F4F6F8",
+          minHeight: "100vh",
+          margin: 0,
+          padding: 0,
+        },
+        html: {
+          minHeight: "100vh",
+        },
+        "#root": {
+          minHeight: "100vh",
+          display: "flex",
+          flexDirection: "column",
+        },
+      },
+    },
     MuiPaper: {
       styleOverrides: {
         root: {

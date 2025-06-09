@@ -53,7 +53,7 @@ function ConsultaClientes() {
   const [clientesFiltrados, setClientesFiltrados] = useState(clientesMock);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [cedulaBusqueda, setCedulaBusqueda] = useState(""); // 👈 Estado para la cédula ingresada
+  const [cedulaBusqueda, setCedulaBusqueda] = useState("");
 
   /** 🚀 Filtrar clientes */
   const handleFilterChange = (filtros: { estado: string; segmento: string; categoria: string; tipoPersona: string }) => {
@@ -72,7 +72,7 @@ function ConsultaClientes() {
     setPage(0);
   };
 
-  /** 🚀 Búsqueda por cédula */
+  /**  Búsqueda por cédula */
   const handleBuscarPorCedula = () => {
     if (cedulaBusqueda === "") {
       setClientesFiltrados(clientesMock);
@@ -84,7 +84,15 @@ function ConsultaClientes() {
   };
 
   return (
-    <Box sx={{ p: 4, backgroundColor: "#f5f6fa", height: "90vh", width: "1200px" }}>
+    <Box sx={{
+        minHeight: "90vh",
+        marginTop: "30px",
+        p: 1,
+        backgroundColor: "background.default",
+        width: "1200px",
+        marginLeft: "50vh"
+       }}>
+
       <Paper elevation={3} sx={{ maxWidth: 1200, mx: "auto", p: 4, borderRadius: 4 }}>
         <Typography variant="h5" fontWeight="bold" gutterBottom color="primary">
           Consultar Clientes

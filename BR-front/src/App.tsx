@@ -30,7 +30,7 @@ function App() {
               <Link to="/"><Button color="inherit" sx={{ fontSize: "16px", fontWeight: "bold", color: "white" }}>CLIENTES</Button></Link>
               <Link to="/cambiar-segmento"><Button color="inherit" sx={{ fontSize: "16px", fontWeight: "bold", color: "white" }}>SEGMENTO</Button></Link>
               <Link to="/actualizar-buro"><Button color="inherit" sx={{ fontSize: "16px", fontWeight: "bold", color: "white" }}>BURO</Button></Link>
-              <Link to="/cambiar-riesgo"><Button color="inherit" sx={{ fontSize: "16px", fontWeight: "bold", color: "white", paddingRight: "40px" }}>CATEGORIA DE RIESGO</Button></Link>
+              <Link to="/cambiar-riesgo"><Button color="inherit" sx={{ fontSize: "16px", fontWeight: "bold", color: "white" }}>CATEGORIA DE RIESGO</Button></Link>
             </nav>
           </Toolbar>
         </AppBar>
