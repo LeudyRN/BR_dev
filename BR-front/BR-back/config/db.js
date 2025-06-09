@@ -1,8 +1,8 @@
 const oracledb = require("oracledb");
 
 const dbConfig = {
-  user: "crmcert",
-  password: "crmcert",
+  user: "",
+  password: "",
   connectString: "(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=10.181.2.114)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=uatip22.sndb.vcndev.oraclevcn.com)))"
 };
 
