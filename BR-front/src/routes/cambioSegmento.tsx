@@ -41,7 +41,7 @@ return (
         marginLeft: "50vh"
        }}>
 
-  <Paper elevation={3} sx={{ p: 4, borderRadius: 4, width: "800px" }}>
+  <Paper elevation={3} sx={{ maxWidth: 1200, mx: "auto", p: 4, borderRadius: 4 }}>
     <Typography variant="h5" fontWeight="bold" gutterBottom color="primary" textAlign="center">
       Gestión de Segmento
     </Typography>
@@ -105,10 +105,11 @@ return (
         onChange={(e) => setNuevoSegmento(e.target.value)}
         fullWidth
       />
+      </Box>
       <Button variant="contained" color="secondary" sx={{ mt: 2 }} onClick={handleCambiarSegmento}>
         Actualizar Segmento
       </Button>
-    </Box>
+
   </Paper>
 </Box>
 );

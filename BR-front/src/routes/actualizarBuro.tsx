@@ -56,7 +56,7 @@ function ActualizarBuro() {
         marginLeft: "50vh"
        }}>
 
-      <Paper elevation={3} sx={{ p: 4, borderRadius: 4 }}>
+      <Paper elevation={3} sx={{ maxWidth: 1200, mx: "auto", p: 4, borderRadius: 4 }}>
         <Typography variant="h5" fontWeight="bold" gutterBottom color="primary">
           Gestión de Buró
         </Typography>
@@ -103,6 +103,7 @@ function ActualizarBuro() {
         <Divider sx={{ my: 3 }} />
 
         {/* 🔹 Transferencia de buró */}
+        <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
         <Typography variant="h6" fontWeight="bold" gutterBottom>
           Transferir Buró de un Cliente a Otro
         </Typography>
@@ -121,9 +122,11 @@ function ActualizarBuro() {
           onChange={(e) => setCedula2(e.target.value)}
           fullWidth
         />
+        </Box>
         <Button sx={{ mt: 2 }} variant="contained" color="secondary" onClick={handleActualizarBuro}>
           Actualizar Buró
         </Button>
+
       </Paper>
     </Box>
   );
