@@ -1,14 +1,26 @@
+require("dotenv").config();
 const oracledb = require("oracledb");
+const sql = require("mssql");
 
-const dbConfig = {
-  user: "",
-  password: "",
-  connectString: "(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=10.181.2.114)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=uatip22.sndb.vcndev.oraclevcn.com)))"
+// 🔹 Configuración para Oracle DB
+const oracleConfig = {
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  connectString: `(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=${process.env.DB_HOST})(PORT=${process.env.DB_PORT}))(CONNECT_DATA=(SERVICE_NAME=${process.env.DB_SERVICE})))`
+};
+// 🔹 Configuración para SQL Server
+const sqlConfig = {
+  user: process.env.DB_USER_SQLSERVER,
+  password: process.env.DB_PASS_SQLSERVER,
+  server: process.env.DB_HOST_SQLSERVER,
+  database: process.env.DB_NAME_SQLSERVER,
+  options: { encrypt: true, trustServerCertificate: true }
 };
 
-const getConnection = async () => {
+// 🔹 Función para conectar a Oracle
+const connectOracle = async () => {
   try {
-    const connection = await oracledb.getConnection(dbConfig);
+    const connection = await oracledb.getConnection(oracleConfig);
     console.log("✅ Conectado a Oracle DB");
     return connection;
   } catch (error) {
@@ -17,4 +29,16 @@ const getConnection = async () => {
   }
 };
 
-module.exports = getConnection;
+// 🔹 Función para conectar a SQL Server
+const connectSQLServer = async () => {
+  try {
+    const pool = await sql.connect(sqlConfig);
+    console.log("✅ Conectado a SQL Server");
+    return pool;
+  } catch (error) {
+    console.error("❌ Error conectando a SQL Server:", error);
+    throw error;
+  }
+};
+
+module.exports = { connectOracle, connectSQLServer };

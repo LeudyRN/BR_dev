@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { TextField, Button, Box, Paper, Typography, Divider, Alert } from "@mui/material";
+import { TextField, Button, Box, Paper, Typography, Divider } from "@mui/material";
 import axios from "axios";
 
 function CambioSegmento() {
@@ -24,15 +24,15 @@ function CambioSegmento() {
     try {
       await axios.put("/api/cambiar-segmento", { cedula: cedulaActualizar, nuevoSegmento });
       alert("¡Segmento actualizado correctamente!");
-      setSegmentoActual(nuevoSegmento); // 👈 Refleja el cambio en la pantalla
+      setSegmentoActual(nuevoSegmento);
     } catch (error) {
       console.error("Error al cambiar segmento:", error);
       alert("Hubo un error al actualizar el segmento.");
     }
   };
 
-  return (
-        <Box sx={{
+return (
+    <Box sx={{
         minHeight: "90vh",
         marginTop: "30px",
         p: 1,
@@ -41,61 +41,77 @@ function CambioSegmento() {
         marginLeft: "50vh"
        }}>
 
-      <Paper elevation={3} sx={{ p: 4, borderRadius: 4 }}>
-        <Typography variant="h5" fontWeight="bold" gutterBottom color="primary">
-         Gestión de Segmento
-        </Typography>
+  <Paper elevation={3} sx={{ p: 4, borderRadius: 4, width: "800px" }}>
+    <Typography variant="h5" fontWeight="bold" gutterBottom color="primary" textAlign="center">
+      Gestión de Segmento
+    </Typography>
 
-        <Divider sx={{ my: 2 }} />
+    <Divider sx={{ my: 3 }} />
 
-        {/* 🔹 Barra de búsqueda por cédula */}
-        <Box sx={{ display: "flex", gap: 2, mb: 3 }}>
-          <TextField
-            label="Consultar por Cédula"
-            variant="outlined"
-            value={cedulaConsulta}
-            onChange={(e) => setCedulaConsulta(e.target.value)}
-            sx={{ flex: 1 }}
-          />
-          <Button variant="contained" color="primary" onClick={handleConsultarSegmento}>
-            Consultar
-          </Button>
-        </Box>
-
-        {/* 🔹 Muestra el segmento actual con diseño estructurado */}
-        {segmentoActual && (
-          <Alert severity="info" sx={{ mb: 2, fontSize: "1rem", fontWeight: "bold" }}>
-            Segmento del cliente actualmente es: <strong>{segmentoActual}</strong>
-          </Alert>
-        )}
-
-        <Divider sx={{ my: 2 }} />
-
-        {/* 🔹 Campo para ingresar la cédula antes de actualizar */}
-        <TextField
-          label="Cédula del Cliente a Modificar"
-          variant="outlined"
-          value={cedulaActualizar}
-          onChange={(e) => setCedulaActualizar(e.target.value)}
-          fullWidth
-          sx={{ mb: 2 }}
-        />
-
-        {/* 🔹 Campo para ingresar el nuevo segmento */}
-        <TextField
-          label="Nuevo Segmento"
-          variant="outlined"
-          value={nuevoSegmento}
-          onChange={(e) => setNuevoSegmento(e.target.value)}
-          fullWidth
-        />
-
-        <Button sx={{ mt: 2 }} variant="contained" color="secondary" onClick={handleCambiarSegmento}>
-          Actualizar Segmento
-        </Button>
-      </Paper>
+    {/* 🔹 Sección de búsqueda por cédula */}
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2, mb: 3 }}>
+      <TextField
+        label="Consultar por Cédula/RNC"
+        variant="outlined"
+        value={cedulaConsulta}
+        onChange={(e) => setCedulaConsulta(e.target.value)}
+        fullWidth
+      />
+      <Button variant="contained" color="primary" onClick={handleConsultarSegmento}>
+        Consultar
+      </Button>
     </Box>
-  );
+
+    {/* 🔹 Sección de Segmento del Cliente */}
+    <Box
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        gap: 2,
+        justifyContent: "space-between",
+        backgroundColor: "background.paper",
+        p: 2,
+        borderRadius: 2,
+        boxShadow: 1,
+        mb: 3,
+      }}
+    >
+      <Typography variant="h6" fontWeight="bold" color="primary">
+        Segmento del cliente:
+      </Typography>
+      <TextField
+        variant="outlined"
+        value={segmentoActual || "Click en Consultar"}
+        InputProps={{ readOnly: true }}
+        sx={{ width: "250px" }}
+      />
+    </Box>
+
+    <Divider sx={{ my: 3 }} />
+
+    {/* 🔹 Campos para actualizar segmento */}
+    <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+      <TextField
+        label="Cédula del Cliente a Modificar"
+        variant="outlined"
+        value={cedulaActualizar}
+        onChange={(e) => setCedulaActualizar(e.target.value)}
+        fullWidth
+      />
+      <TextField
+        label="Nuevo Segmento"
+        variant="outlined"
+        value={nuevoSegmento}
+        onChange={(e) => setNuevoSegmento(e.target.value)}
+        fullWidth
+      />
+      <Button variant="contained" color="secondary" sx={{ mt: 2 }} onClick={handleCambiarSegmento}>
+        Actualizar Segmento
+      </Button>
+    </Box>
+  </Paper>
+</Box>
+);
 }
 
 export default CambioSegmento;

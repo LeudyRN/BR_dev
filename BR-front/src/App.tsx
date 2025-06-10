@@ -7,7 +7,7 @@ import ConsultaClientes from "./routes/consultarClientes";
 import CambioSegmento from "./routes/cambioSegmento";
 import ActualizarBuro from "./routes/actualizarBuro";
 import CambioCategoriaRiesgo from "./routes/cambiarCategoriaRiesgo";
-import logo from "./assets/react.svg";
+import logo from "./assets/logo.png";
 import "./App.css";
 
 function App() {
@@ -18,12 +18,18 @@ function App() {
       <Router>
         {/* Header con Logo y Título mejorado */}
         <AppBar position="fixed">
-          <Toolbar sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <Toolbar sx={{ display: "flex", justifyContent: "space-between", alignItems: "center"}}>
             {/* 🔹 Logo de Banreservas con mejor espaciado */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2, minHeight: "80px"}}>
-              <img src={logo} alt="Banreservas" style={{ height: "50px" }} /> {/* ⬆ Logo más grande */}
-              <Typography variant="h5" sx={{ fontWeight: "bold", color: "white" }}>Gestión de Clientes</Typography>
-            </Box>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2, minHeight: "80px" }}>
+                <img src={logo} alt="Banreservas" style={{ height: "50px", filter: "invert(100%) saturate(0) brightness(200%)" }} />
+
+                {/* Línea divisora */}
+                <Box sx={{ width: "2px", height: "50px", backgroundColor: "white", marginX: 2 }} />
+
+                <Typography variant="h5" sx={{ fontWeight: "bold", color: "white", marginTop: "10px" }}>
+                  Gestión de Clientes
+                </Typography>
+              </Box>
 
             {/* 🔹 Menú de Navegación con botones más estilizados */}
             <nav style={{ display: "flex", gap: "30px" }}>

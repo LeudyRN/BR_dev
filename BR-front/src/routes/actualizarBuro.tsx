@@ -3,12 +3,12 @@ import { TextField, Button, Box, Paper, Typography, Divider, Dialog, DialogTitle
 import axios from "axios";
 
 function ActualizarBuro() {
-  const [cedulaConsulta, setCedulaConsulta] = useState(""); // 👈 Cédula para consulta de buró
-  const [buroActual, setBuroActual] = useState(""); // 👈 Buró del cliente consultado
-  const [nuevoBuro, setNuevoBuro] = useState(""); // 👈 Buró que será modificado
-  const [cedula1, setCedula1] = useState(""); // 👈 Cédula con buen buró
-  const [cedula2, setCedula2] = useState(""); // 👈 Cédula con buró malo
-  const [openDialog, setOpenDialog] = useState(false); // 👈 Estado del pop-up
+  const [cedulaConsulta, setCedulaConsulta] = useState("");
+  const [buroActual, setBuroActual] = useState("");
+  const [nuevoBuro, setNuevoBuro] = useState("");
+  const [cedula1, setCedula1] = useState("");
+  const [cedula2, setCedula2] = useState("");
+  const [openDialog, setOpenDialog] = useState(false);
 
   /**  Consultar el buró del cliente */
   const handleConsultarBuro = async () => {
@@ -73,7 +73,7 @@ function ActualizarBuro() {
             sx={{ flex: 1 }}
           />
           <Button variant="contained" color="primary" onClick={handleConsultarBuro}>
-            Modificar Buró
+            Consultar Buró
           </Button>
         </Box>
 
