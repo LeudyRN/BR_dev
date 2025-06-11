@@ -13,10 +13,9 @@ const sqlConfig = {
   user: process.env.DB_USER_SQLSERVER,
   password: process.env.DB_PASS_SQLSERVER,
   server: process.env.DB_HOST_SQLSERVER,
-  database: process.env.DB_NAME_SQLSERVER,
+  port: parseInt(process.env.DB_PORT_SQLSERVER, 10),
   options: { encrypt: true, trustServerCertificate: true }
 };
-
 // 🔹 Función para conectar a Oracle
 const connectOracle = async () => {
   try {
