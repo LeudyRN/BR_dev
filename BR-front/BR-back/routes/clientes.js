@@ -17,29 +17,36 @@ router.get("/", async (req, res) => {
     const connection = await getOracleConnection();
 
 const query = `
-      SELECT
-        o.ou_num AS Identificacion,
-        o.alias_name AS NombreCompleto,
-        x.x_attrib_110 AS NombreComercial,
-        x.attrib_27 AS FechaFundacion,
-        f.desc_text AS TipoCliente,
-        x.x_attrib_85 AS TipoPersona,
-        o.cust_stat_cd AS Estado,
-        x.x_attrib_92 AS CodigoActividadEconomica,
-        e.desc_text AS ActividadEconomica,
-        x.attrib_19 AS IngresosAnuales,
-        o.base_curcy_cd AS MonedaIngresos,
-        h.x_codigo AS SegmentoCliente,
-        X.X_FECHA_VENC_PASA AS FechaVencimiento
-      FROM siebel.s_org_ext o
-      LEFT JOIN siebel.s_org_ext_x x ON o.row_id = x.par_row_id
-      LEFT JOIN siebel.eai_view_lst_of_val e ON x.x_attrib_92 = e.val AND e.type = 'BR_ACTIVIDAD_ECONOMICA' AND e.lang_id = 'ESN' AND e.active_flg = 'Y'
-      LEFT JOIN siebel.eai_view_lst_of_val f ON f.val = x.x_attrib_105 AND f.type = 'BR_PJ_TIPO_CLIENTE' AND f.lang_id = 'ESN' AND f.active_flg = 'Y'
-      LEFT JOIN siebel.cx_segmentos h ON h.row_id = o.x_seg_id
-      LEFT JOIN SIEBEL.S_CONTACT A ON A.SOC_SECURITY_NUM = o.ou_num
-      LEFT JOIN SIEBEL.CX_SEGMENTOS H ON H.ROW_ID = A.X_SEG_ID
-      LEFT JOIN SIEBEL.S_CONTACT_X X ON X.PAR_ROW_ID = A.ROW_ID
-      FETCH FIRST 50 ROWS ONLY
+SELECT
+    TO_CHAR(o.ou_num) AS Identificacion, -- Convertimos a VARCHAR2 para compatibilidad
+    o.alias_name AS NombreCompleto,
+    x.x_attrib_110 AS NombreComercial,
+    f.desc_text AS TipoCliente,
+    x.x_attrib_85 AS TipoPersona,
+    TO_CHAR(o.cust_stat_cd) AS Estado, -- Convertimos a VARCHAR2
+    h.x_codigo AS SegmentoCliente,
+    'NO DISPONIBLE' AS Riesgo, -- 🔹 No hay una columna específica para "Riesgo", así que usamos un valor por defecto
+    TO_CHAR(X.X_FECHA_VENC_PASA, 'YYYY-MM-DD') AS FechaVencimiento -- Convertimos fecha a formato legible
+FROM siebel.s_org_ext o
+LEFT JOIN siebel.s_org_ext_x x ON o.row_id = x.par_row_id
+LEFT JOIN siebel.eai_view_lst_of_val f ON f.val = x.x_attrib_105 AND f.type = 'BR_PJ_TIPO_CLIENTE' AND f.lang_id = 'ESN' AND f.active_flg = 'Y'
+LEFT JOIN siebel.cx_segmentos h ON h.row_id = o.x_seg_id
+
+UNION ALL
+
+SELECT
+    TO_CHAR(A.SOC_SECURITY_NUM) AS Identificacion, -- Convertimos a VARCHAR2 para compatibilidad
+    A.FST_NAME || ' ' || NVL(A.MID_NAME, '') || ' ' || A.LAST_NAME || ' ' || NVL(A.MAIDEN_NAME, '') AS NombreCompleto,
+    'SIN NOMBRE COMERCIAL' AS NombreComercial,
+    'SIN TIPO CLIENTE' AS TipoCliente,
+    'Persona Física' AS TipoPersona, -- Definimos explícitamente que es persona física
+    TO_CHAR(A.CUST_STAT_CD) AS Estado, -- Convertimos a VARCHAR2
+    NVL(H.X_CODIGO, 'SIN SEGMENTO') AS SegmentoCliente,
+    'NO DISPONIBLE' AS Riesgo, -- 🔹 No hay una columna específica para "Riesgo", así que usamos un valor por defecto
+    'NO DISPONIBLE' AS FechaVencimiento -- 🔹 Usamos un valor por defecto si la columna no existe
+FROM SIEBEL.S_CONTACT A
+LEFT JOIN SIEBEL.CX_SEGMENTOS H ON H.ROW_ID = A.X_SEG_ID
+
     `;
 
     const result = await connection.execute(query);
