@@ -1,6 +1,5 @@
 import { Select, MenuItem, Button, Box, FormControl, InputLabel } from "@mui/material";
 import { useState, useEffect } from "react";
-//import axios from "axios";
 
 /** 🔹 Definir estructura de Cliente */
 interface Cliente {
@@ -12,34 +11,40 @@ interface Cliente {
 
 function FiltrosClientes({ onFilter }: { onFilter: (filtros: { estado: string; segmento: string; categoria: string; tipoPersona: string; }) => void }) {
   const [estado, setEstado] = useState("");
-  const [segmentos, setSegmentos] = useState<string[]>([]);
   const [segmento, setSegmento] = useState("");
-  const [categorias, setCategorias] = useState<string[]>([]);
   const [categoria, setCategoria] = useState("");
-  const [tiposPersona, setTiposPersona] = useState<string[]>([]);
   const [tipoPersona, setTipoPersona] = useState("");
 
-  /**  Cargar clientes y extraer opciones únicas con tipado correcto */
-useEffect(() => {
-  fetch("http://localhost:5000/api/clientes")
-    .then(response => response.json())
-    .then((data: Cliente[]) => { // 🔹 Especificamos el tipo aquí
-      console.log("✅ Datos recibidos:", data);
+  const [segmentos, setSegmentos] = useState<string[]>([]);
+  const [categorias, setCategorias] = useState<string[]>([]);
+  const [tiposPersona, setTiposPersona] = useState<string[]>([]);
 
-      setSegmentos([...new Set(data.map((cliente) => cliente.segmento))]);
-      setCategorias([...new Set(data.map((cliente) => cliente.categoria))]);
-      setTiposPersona([...new Set(data.map((cliente) => cliente.tipoPersona))]);
-    })
-    .catch(error => console.error("❌ Error al cargar clientes:", error));
-}, []);
+  /** 🚀 Cargar clientes y extraer opciones únicas con tipado correcto */
+  useEffect(() => {
+    fetch("http://localhost:5000/api/clientes")
+      .then(response => response.json())
+      .then((data: Cliente[]) => {
+        console.log("✅ Datos recibidos:", data);
 
-  /**  Aplicar filtros */
+        const segmentosUnicos = [...new Set(data.map((cliente) => cliente.segmento))];
+        const categoriasUnicas = [...new Set(data.map((cliente) => cliente.categoria))];
+        const tiposPersonaUnicos = [...new Set(data.map((cliente) => cliente.tipoPersona))];
+
+        setSegmentos(segmentosUnicos);
+        setCategorias(categoriasUnicas);
+        setTiposPersona(tiposPersonaUnicos);
+      })
+      .catch(error => console.error("❌ Error al cargar clientes:", error));
+  }, []);
+
+  /** 🚀 Aplicar filtros */
   const aplicarFiltro = () => {
     onFilter({ estado, segmento, categoria, tipoPersona });
   };
 
   return (
     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, alignItems: "flex-end", p: 2, backgroundColor: "background.paper", borderRadius: 2, boxShadow: 1 }}>
+
       {/* Estado */}
       <FormControl sx={{ minWidth: 160 }} size="small">
         <InputLabel id="estado-label">Estado</InputLabel>
@@ -56,7 +61,9 @@ useEffect(() => {
         <InputLabel id="segmento-label">Segmento</InputLabel>
         <Select labelId="segmento-label" value={segmento} label="Segmento" onChange={(e) => setSegmento(e.target.value)}>
           <MenuItem value="">Todos</MenuItem>
-          {segmentos.map((seg) => <MenuItem key={seg} value={seg}>{seg}</MenuItem>)}
+          {segmentos.map((seg, index) => (
+            <MenuItem key={`${seg}-${index}`} value={seg}>{seg}</MenuItem>
+          ))}
         </Select>
       </FormControl>
 
@@ -65,7 +72,9 @@ useEffect(() => {
         <InputLabel id="categoria-label">Categoría</InputLabel>
         <Select labelId="categoria-label" value={categoria} label="Categoría" onChange={(e) => setCategoria(e.target.value)}>
           <MenuItem value="">Todos</MenuItem>
-          {categorias.map((cat) => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
+          {categorias.map((cat, index) => (
+            <MenuItem key={`${cat}-${index}`} value={cat}>{cat}</MenuItem>
+          ))}
         </Select>
       </FormControl>
 
@@ -74,7 +83,9 @@ useEffect(() => {
         <InputLabel id="tipoPersona-label">Tipo de Persona</InputLabel>
         <Select labelId="tipoPersona-label" value={tipoPersona} label="Tipo de Persona" onChange={(e) => setTipoPersona(e.target.value)}>
           <MenuItem value="">Todos</MenuItem>
-          {tiposPersona.map((tipo) => <MenuItem key={tipo} value={tipo}>{tipo}</MenuItem>)}
+          {tiposPersona.map((tipo, index) => (
+            <MenuItem key={`${tipo}-${index}`} value={tipo}>{tipo}</MenuItem>
+          ))}
         </Select>
       </FormControl>
 

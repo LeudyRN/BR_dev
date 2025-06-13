@@ -107,9 +107,9 @@ const handleBuscarPorCedula = () => {
                   <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Fecha de vencimiento</TableCell>
                 </TableRow>
               </TableHead>
-              <TableBody>
-                {clientesFiltrados.slice(page * rowsPerPage, Math.min(clientesFiltrados.length, (page + 1) * rowsPerPage)).map((cliente) => (
-                  <TableRow key={cliente.id} hover>
+             <TableBody>
+                {clientesFiltrados.slice(page * rowsPerPage, Math.min(clientesFiltrados.length, (page + 1) * rowsPerPage)).map((cliente, index) => (
+                  <TableRow key={`${cliente.id}-${index}`} hover>
                     <TableCell>{cliente.id}</TableCell>
                     <TableCell>{cliente.nombre}</TableCell>
                     <TableCell>{cliente.cedula}</TableCell>
