@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const getConnection = require("../config/db");
+const { getConnection } = require("../config/db");
 
 // 🔹 Obtener todos los clientes
 router.get("/", async (req, res) => {
