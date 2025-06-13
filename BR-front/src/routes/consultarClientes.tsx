@@ -16,6 +16,8 @@ interface Cliente {
   fechaVenc: string;
 }
 
+
+
 /** Componente Principal */
 function ConsultaClientes() {
   const [clientesFiltrados, setClientesFiltrados] = useState<Cliente[]>([]);
@@ -27,9 +29,23 @@ function ConsultaClientes() {
 useEffect(() => {
   fetch("http://localhost:5000/api/clientes")
     .then(response => response.json())
-    .then(data => setClientesFiltrados(data))
+    .then((data: Partial<Cliente>[]) => {
+      const clientesMapeados: Cliente[] = data.map((item): Cliente => ({
+        id: item.id ?? 0,
+        nombre: item.nombre ?? "Sin nombre",
+        cedula: item.cedula ?? "N/A",
+        estado: item.estado ?? "Desconocido",
+        segmento: item.segmento ?? "Sin segmento",
+        categoria: item.categoria ?? "Sin categoría",
+        tipoPersona: item.tipoPersona ?? "Sin tipo",
+        fechaVenc: item.fechaVenc ?? "N/A"
+      }));
+
+      setClientesFiltrados(clientesMapeados);
+    })
     .catch(error => console.error("❌ Error al obtener clientes:", error));
 }, []);
+
 
   /**  Filtrar clientes desde la API */
 const handleFilterChange = (filtros: { estado: string; segmento: string; categoria: string; tipoPersona: string }) => {
