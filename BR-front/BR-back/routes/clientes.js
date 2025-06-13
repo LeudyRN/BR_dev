@@ -16,8 +16,7 @@ router.get("/", async (req, res) => {
   try {
     const connection = await getOracleConnection();
 
-const query = `
-
+    const queryFisica = `
 SELECT
   CAST(NULL AS NUMBER) AS id,
   TRIM(A.FST_NAME || ' ' || A.MID_NAME || ' ' || A.LAST_NAME || ' ' || A.MAIDEN_NAME) AS nombre,
@@ -30,9 +29,9 @@ SELECT
 FROM SIEBEL.S_CONTACT A
 LEFT JOIN SIEBEL.CX_SEGMENTOS H ON H.ROW_ID = A.X_SEG_ID
 LEFT JOIN SIEBEL.S_CONTACT_X X ON X.PAR_ROW_ID = A.ROW_ID
+`;
 
-UNION ALL
-
+    const queryJuridica = `
 SELECT
   CAST(NULL AS NUMBER) AS id,
   o.alias_name AS nombre,
@@ -50,11 +49,13 @@ LEFT JOIN siebel.eai_view_lst_of_val f
   AND f.lang_id = 'ESN'
   AND f.active_flg = 'Y'
 LEFT JOIN siebel.cx_segmentos h ON h.row_id = o.x_seg_id
+`;
 
-    `;
-
-    const result = await connection.execute(query);
-
+    // Ejecutarlas separadas y luego unir resultados:
+    const [result1, result2] = await Promise.all([
+      connection.execute(queryFisica),
+      connection.execute(queryJuridica)
+    ]);
 
     const clientes = result.rows.map(row => ({
       id: row[0],
