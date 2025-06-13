@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios"; // ✅ Se agrega axios para llamadas a la API
+//import axios from "axios"; //
 import FiltrosClientes from "../components/FiltrosClientes";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box, Typography, Divider, TablePagination } from "@mui/material";
 import { TextField, Button } from "@mui/material";
@@ -24,34 +24,36 @@ function ConsultaClientes() {
   const [cedulaBusqueda, setCedulaBusqueda] = useState("");
 
   /**  Cargar clientes desde la API al montar */
-  useEffect(() => {
-    axios.get("http://localhost:5000/api/clientes") //  Conexión con la API
-      .then((response) => setClientesFiltrados(response.data))
-      .catch((error) => console.error("Error al obtener clientes:", error));
-  }, []);
+useEffect(() => {
+  fetch("http://localhost:5000/api/clientes")
+    .then(response => response.json())
+    .then(data => setClientesFiltrados(data))
+    .catch(error => console.error("❌ Error al obtener clientes:", error));
+}, []);
 
   /**  Filtrar clientes desde la API */
-  const handleFilterChange = (filtros: { estado: string; segmento: string; categoria: string; tipoPersona: string }) => {
-    axios.get("http://localhost:5000/api/clientes", { params: filtros }) //  Se envían filtros como parámetros
-      .then((response) => setClientesFiltrados(response.data))
-      .catch((error) => console.error("Error al filtrar clientes:", error));
+const handleFilterChange = (filtros: { estado: string; segmento: string; categoria: string; tipoPersona: string }) => {
+  const queryParams = new URLSearchParams(filtros).toString();
 
-    setPage(0);
-  };
+  fetch(`http://localhost:5000/api/clientes?${queryParams}`)
+    .then(response => response.json())
+    .then(data => setClientesFiltrados(data))
+    .catch(error => console.error("❌ Error al filtrar clientes:", error));
+
+  setPage(0);
+};
 
   /**  Búsqueda por cédula desde la API */
-  const handleBuscarPorCedula = () => {
-    if (cedulaBusqueda === "") {
-      axios.get("http://localhost:5000/api/clientes")
-        .then((response) => setClientesFiltrados(response.data))
-        .catch((error) => console.error("Error al obtener clientes:", error));
-    } else {
-      axios.get(`http://localhost:5000/api/clientes/${cedulaBusqueda}`) //  Se consulta por cédula
-        .then((response) => setClientesFiltrados([response.data])) //  Se guarda en un array para la tabla
-        .catch((error) => console.error("Error en la búsqueda por cédula:", error));
-    }
-    setPage(0);
-  };
+const handleBuscarPorCedula = () => {
+  const url = cedulaBusqueda ? `http://localhost:5000/api/clientes/${cedulaBusqueda}` : "http://localhost:5000/api/clientes";
+
+  fetch(url)
+    .then(response => response.json())
+    .then(data => setClientesFiltrados(Array.isArray(data) ? data : [data])) // Asegura que sea un array
+    .catch(error => console.error("❌ Error en la búsqueda por cédula:", error));
+
+  setPage(0);
+};
 
   return (
     <Box sx={{

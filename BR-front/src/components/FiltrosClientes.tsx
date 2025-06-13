@@ -1,6 +1,6 @@
 import { Select, MenuItem, Button, Box, FormControl, InputLabel } from "@mui/material";
 import { useState, useEffect } from "react";
-import axios from "axios";
+//import axios from "axios";
 
 /** 🔹 Definir estructura de Cliente */
 interface Cliente {
@@ -19,21 +19,21 @@ function FiltrosClientes({ onFilter }: { onFilter: (filtros: { estado: string; s
   const [tiposPersona, setTiposPersona] = useState<string[]>([]);
   const [tipoPersona, setTipoPersona] = useState("");
 
-  /** 🚀 Cargar clientes y extraer opciones únicas con tipado correcto */
-  useEffect(() => {
-    axios.get<Cliente[]>("http://localhost:5000/api/clientes")
-      .then((response) => {
-        const data = response.data;
+  /**  Cargar clientes y extraer opciones únicas con tipado correcto */
+useEffect(() => {
+  fetch("http://localhost:5000/api/clientes")
+    .then(response => response.json())
+    .then((data: Cliente[]) => { // 🔹 Especificamos el tipo aquí
+      console.log("✅ Datos recibidos:", data);
 
-        // 🔹 Extraer opciones únicas con conversión de tipo
-        setSegmentos([...new Set(data.map((cliente) => cliente.segmento))] as string[]);
-        setCategorias([...new Set(data.map((cliente) => cliente.categoria))] as string[]);
-        setTiposPersona([...new Set(data.map((cliente) => cliente.tipoPersona))] as string[]);
-      })
-      .catch((error) => console.error("❌ Error al cargar clientes:", error));
-  }, []);
+      setSegmentos([...new Set(data.map((cliente) => cliente.segmento))]);
+      setCategorias([...new Set(data.map((cliente) => cliente.categoria))]);
+      setTiposPersona([...new Set(data.map((cliente) => cliente.tipoPersona))]);
+    })
+    .catch(error => console.error("❌ Error al cargar clientes:", error));
+}, []);
 
-  /** 🚀 Aplicar filtros */
+  /**  Aplicar filtros */
   const aplicarFiltro = () => {
     onFilter({ estado, segmento, categoria, tipoPersona });
   };
