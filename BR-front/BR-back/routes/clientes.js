@@ -55,8 +55,21 @@ LEFT JOIN siebel.cx_segmentos h ON h.row_id = o.x_seg_id
 
     const result = await connection.execute(query);
 
-    console.log("✅ Clientes obtenidos:", result.rows.length);
-    res.status(200).json(result.rows);
+
+    const clientes = result.rows.map(row => ({
+      id: row[0],
+      nombre: row[1],
+      cedula: row[2],
+      estado: row[3],
+      segmento: row[4],
+      categoria: row[5],
+      tipoPersona: row[6],
+      fechaVenc: row[7]
+    }));
+
+    console.log("✅ Clientes obtenidos:", clientes.length);
+    res.status(200).json(clientes); // Enviar objetos, no arrays crudos
+    ;
 
   } catch (err) {
     console.error("❌ Error al obtener clientes:", err.message);
