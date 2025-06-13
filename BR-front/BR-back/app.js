@@ -19,10 +19,15 @@ app.use("/api/segmento", segmentoRoutes);
 
 // 🔹 Puerto de ejecución
 const PORT = process.env.PORT || 5000;
+
 app.listen(PORT, async () => {
   try {
-    await connectOracle(); // ✅ Usamos el nombre correcto
-    await connectSQLServer(); // ✅ Conectamos a SQL Server también
+    const oracleConnection = await connectOracle();
+    const sqlServerConnection = await connectSQLServer();
+
+    console.log("✅ Conectado a Oracle:", !!oracleConnection);
+    console.log("✅ Conectado a SQL Server:", !!sqlServerConnection);
+
     console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
   } catch (error) {
     console.error("❌ Error al conectar con la base de datos:", error.message);
