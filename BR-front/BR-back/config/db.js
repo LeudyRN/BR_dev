@@ -43,10 +43,13 @@ const connectSQLServer = async () => {
 };
 
 const getConnection = async () => {
-  const pool = await connectSQLServer();
-  return pool.request(); // Para consultas SQL
+  try {
+    const pool = await connectSQLServer();
+    return pool; // Devuelve el pool completo
+  } catch (error) {
+    console.error("❌ Error al obtener la conexión a SQL Server:", error.message);
+    throw error;
+  }
 };
-
-
 
 module.exports = { connectOracle, connectSQLServer, getConnection };

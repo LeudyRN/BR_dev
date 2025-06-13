@@ -1,11 +1,11 @@
 const express = require("express");
 const router = express.Router();
-const { getConnection } = require("../config/db");
+const { connectOracle } = require("../config/db");
 
 // 🔹 Obtener todos los clientes
 router.get("/", async (req, res) => {
   try {
-    const connection = await getConnection();
+    const connection = await connectOracle();
     const query = `SELECT
         COALESCE(o.ou_num, A.SOC_SECURITY_NUM) AS Identificacion,
         COALESCE(o.alias_name, A.FST_NAME || ' ' || A.MID_NAME || ' ' || A.LAST_NAME || ' ' || A.MAIDEN_NAME) AS NombreCompleto,
