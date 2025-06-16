@@ -1,87 +1,92 @@
 import { Select, MenuItem, Button, Box, FormControl, InputLabel } from "@mui/material";
 import { useState, useEffect } from "react";
-import axios from "axios";
 
-/** 🔹 Definir estructura de Cliente */
-interface Cliente {
+/** Definir estructura de Filtros */
+interface Filters {
   estado: string;
   segmento: string;
-  categoria: string;
   tipoPersona: string;
 }
 
-function FiltrosClientes({ onFilter }: { onFilter: (filtros: { estado: string; segmento: string; categoria: string; tipoPersona: string; }) => void }) {
+// Opciones de Tipo de Persona y Estado - Mantener hardcodeadas si son fijas y no vienen de DB
+const hardcodedTiposPersona = ["Física", "Empresa"];
+// Se ha añadido "Rechazado" a las opciones de estado
+const hardcodedEstados = ["Activo", "Inactivo", "Creado", "Rechazado"];
+
+
+function FiltrosClientes({ onFilter }: { onFilter: (filtros: Filters) => void }) {
   const [estado, setEstado] = useState("");
-  const [segmentos, setSegmentos] = useState<string[]>([]);
   const [segmento, setSegmento] = useState("");
-  const [categorias, setCategorias] = useState<string[]>([]);
-  const [categoria, setCategoria] = useState("");
-  const [tiposPersona, setTiposPersona] = useState<string[]>([]);
   const [tipoPersona, setTipoPersona] = useState("");
 
-  /** 🚀 Cargar clientes y extraer opciones únicas con tipado correcto */
+  const [dynamicSegmentos, setDynamicSegmentos] = useState<string[]>([]); // Nuevo estado para segmentos dinámicos
+
+  /** 🚀 Cargar opciones de Segmento desde la nueva API */
   useEffect(() => {
-    axios.get<Cliente[]>("http://localhost:5000/api/clientes")
-      .then((response) => {
-        const data = response.data;
-
-        // 🔹 Extraer opciones únicas con conversión de tipo
-        setSegmentos([...new Set(data.map((cliente) => cliente.segmento))] as string[]);
-        setCategorias([...new Set(data.map((cliente) => cliente.categoria))] as string[]);
-        setTiposPersona([...new Set(data.map((cliente) => cliente.tipoPersona))] as string[]);
+    fetch("http://localhost:5000/api/ConsultaCliente/segmentos-unicos")
+      .then(response => response.json())
+      .then((data: string[]) => {
+        console.log("✅ Segmentos dinámicos recibidos:", data);
+        setDynamicSegmentos(data.filter(Boolean)); // Asegurarse de filtrar cualquier valor nulo/vacío
       })
-      .catch((error) => console.error("❌ Error al cargar clientes:", error));
-  }, []);
+      .catch(error => console.error("❌ Error al cargar segmentos dinámicos:", error));
+  }, []); // Se ejecuta solo una vez al montar el componente
 
-  /** 🚀 Aplicar filtros */
   const aplicarFiltro = () => {
-    onFilter({ estado, segmento, categoria, tipoPersona });
+    onFilter({ estado, segmento, tipoPersona });
+  };
+
+  const limpiarFiltros = () => {
+    setEstado("");
+    setSegmento("");
+    setTipoPersona("");
+    onFilter({ estado: "", segmento: "", tipoPersona: "" }); // Notificar al componente padre que se limpiaron los filtros
   };
 
   return (
     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, alignItems: "flex-end", p: 2, backgroundColor: "background.paper", borderRadius: 2, boxShadow: 1 }}>
+
       {/* Estado */}
       <FormControl sx={{ minWidth: 160 }} size="small">
         <InputLabel id="estado-label">Estado</InputLabel>
-        <Select labelId="estado-label" value={estado} label="Estado" onChange={(e) => setEstado(e.target.value)}>
+        <Select labelId="estado-label" value={estado} label="Estado" onChange={(e) => setEstado(e.target.value as string)}>
           <MenuItem value="">Todos</MenuItem>
-          <MenuItem value="activo">Activos</MenuItem>
-          <MenuItem value="inactivo">Inactivos</MenuItem>
-          <MenuItem value="creado">Creados</MenuItem>
+          {hardcodedEstados.map((est, index) => (
+            <MenuItem key={index} value={est}>{est}</MenuItem>
+          ))}
         </Select>
       </FormControl>
 
-      {/* Segmento (Dinámico) */}
+      {/* Segmento - Ahora usa los segmentos cargados dinámicamente */}
       <FormControl sx={{ minWidth: 160 }} size="small">
         <InputLabel id="segmento-label">Segmento</InputLabel>
-        <Select labelId="segmento-label" value={segmento} label="Segmento" onChange={(e) => setSegmento(e.target.value)}>
+        <Select labelId="segmento-label" value={segmento} label="Segmento" onChange={(e) => setSegmento(e.target.value as string)}>
           <MenuItem value="">Todos</MenuItem>
-          {segmentos.map((seg) => <MenuItem key={seg} value={seg}>{seg}</MenuItem>)}
+          {dynamicSegmentos.map((seg, index) => (
+            <MenuItem key={index} value={seg}>{seg}</MenuItem>
+          ))}
         </Select>
       </FormControl>
 
-      {/* Categoría (Dinámico) */}
-      <FormControl sx={{ minWidth: 160 }} size="small">
-        <InputLabel id="categoria-label">Categoría</InputLabel>
-        <Select labelId="categoria-label" value={categoria} label="Categoría" onChange={(e) => setCategoria(e.target.value)}>
-          <MenuItem value="">Todos</MenuItem>
-          {categorias.map((cat) => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
-        </Select>
-      </FormControl>
-
-      {/* Tipo de Persona (Dinámico) */}
+      {/* Tipo de Persona */}
       <FormControl sx={{ minWidth: 160 }} size="small">
         <InputLabel id="tipoPersona-label">Tipo de Persona</InputLabel>
-        <Select labelId="tipoPersona-label" value={tipoPersona} label="Tipo de Persona" onChange={(e) => setTipoPersona(e.target.value)}>
+        <Select labelId="tipoPersona-label" value={tipoPersona} label="Tipo de Persona" onChange={(e) => setTipoPersona(e.target.value as string)}>
           <MenuItem value="">Todos</MenuItem>
-          {tiposPersona.map((tipo) => <MenuItem key={tipo} value={tipo}>{tipo}</MenuItem>)}
+          {hardcodedTiposPersona.map((tipo, index) => (
+            <MenuItem key={index} value={tipo}>{tipo}</MenuItem>
+          ))}
         </Select>
       </FormControl>
 
-      {/* Botón */}
-      <Box>
+      {/* Botones */}
+      <Box sx={{ display: 'flex', gap: 1 }}>
         <Button variant="contained" color="primary" onClick={aplicarFiltro} sx={{ minWidth: 120 }}>
           Filtrar
+        </Button>
+        {/* El botón "Limpiar" ahora es "contained" con color "secondary" */}
+        <Button variant="contained" color="secondary" onClick={limpiarFiltros} sx={{ minWidth: 120 }}>
+          Limpiar
         </Button>
       </Box>
     </Box>

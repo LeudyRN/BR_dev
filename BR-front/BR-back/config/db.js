@@ -16,6 +16,8 @@ const sqlConfig = {
   port: parseInt(process.env.DB_PORT_SQLSERVER, 10),
   options: { encrypt: true, trustServerCertificate: true }
 };
+
+
 // 🔹 Función para conectar a Oracle
 const connectOracle = async () => {
   try {
@@ -40,4 +42,9 @@ const connectSQLServer = async () => {
   }
 };
 
-module.exports = { connectOracle, connectSQLServer };
+const getConnection = async () => {
+  const pool = await connectSQLServer();
+  return pool.request(); // Para consultas SQL
+};
+
+module.exports = { connectOracle, connectSQLServer, getConnection };

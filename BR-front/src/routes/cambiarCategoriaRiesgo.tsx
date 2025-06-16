@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { TextField, Button, Box, Paper, Typography, Divider, Tooltip, IconButton } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import axios from "axios";
+//import axios from "axios";
 
 function CambioCategoriaRiesgo() {
   const [cedulaConsulta, setCedulaConsulta] = useState("");
@@ -10,27 +10,38 @@ function CambioCategoriaRiesgo() {
   const [nuevaCategoria, setNuevaCategoria] = useState("");
 
   /** 🔹 Consultar el riesgo del cliente */
-  const handleConsultarRiesgo = async () => {
-    try {
-      const response = await axios.get(`/api/consultar-riesgo?cedula=${cedulaConsulta}`);
-      setRiesgoActual(response.data.riesgo);
-    } catch (error) {
-      console.error("Error al consultar riesgo:", error);
-      alert("Hubo un error al consultar la categoría de riesgo.");
-    }
-  };
+const handleConsultarRiesgo = async () => {
+  try {
+    const response = await fetch(`/api/consultar-riesgo?cedula=${cedulaConsulta}`);
+
+    if (!response.ok) throw new Error("Error al consultar riesgo.");
+
+    const data = await response.json();
+    setRiesgoActual(data.riesgo);
+  } catch (error) {
+    console.error("❌ Error al consultar riesgo:", error);
+    alert("Hubo un error al consultar la categoría de riesgo.");
+  }
+};
 
   /** 🔹 Cambiar la categoría de riesgo */
-  const handleCambiarCategoria = async () => {
-    try {
-      await axios.put("/api/cambiar-riesgo", { cedula: cedulaActualizar, nuevaCategoria });
-      alert("¡Categoría de riesgo actualizada correctamente!");
-      setRiesgoActual(nuevaCategoria);
-    } catch (error) {
-      console.error("Error al cambiar categoría de riesgo:", error);
-      alert("Hubo un error al actualizar la categoría.");
-    }
-  };
+ const handleCambiarCategoria = async () => {
+  try {
+    const response = await fetch("/api/cambiar-riesgo", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cedula: cedulaActualizar, nuevaCategoria })
+    });
+
+    if (!response.ok) throw new Error("Error en la actualización.");
+
+    alert("¡Categoría de riesgo actualizada correctamente!");
+    setRiesgoActual(nuevaCategoria);
+  } catch (error) {
+    console.error("❌ Error al cambiar categoría de riesgo:", error);
+    alert("Hubo un error al actualizar la categoría.");
+  }
+};
 
   return (
      <Box sx={{

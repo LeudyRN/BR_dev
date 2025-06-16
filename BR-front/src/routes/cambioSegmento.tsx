@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { TextField, Button, Box, Paper, Typography, Divider } from "@mui/material";
-import axios from "axios";
+//import axios from "axios";
 
 function CambioSegmento() {
   const [cedulaConsulta, setCedulaConsulta] = useState("");
@@ -9,27 +9,35 @@ function CambioSegmento() {
   const [nuevoSegmento, setNuevoSegmento] = useState("");
 
   /**  Consultar el segmento del cliente */
-  const handleConsultarSegmento = async () => {
-    try {
-      const response = await axios.get(`/api/consultar-segmento?cedula=${cedulaConsulta}`);
-      setSegmentoActual(response.data.segmento);
-    } catch (error) {
-      console.error("Error al consultar segmento:", error);
-      alert("Hubo un error al consultar el segmento.");
-    }
-  };
+const handleConsultarSegmento = async () => {
+  try {
+    const response = await fetch(`/api/consultar-segmento?cedula=${cedulaConsulta}`);
+    const data = await response.json();
+    setSegmentoActual(data.segmento);
+  } catch (error) {
+    console.error("❌ Error al consultar segmento:", error);
+    alert("Hubo un error al consultar el segmento.");
+  }
+};
 
   /**  Actualizar el segmento */
-  const handleCambiarSegmento = async () => {
-    try {
-      await axios.put("/api/cambiar-segmento", { cedula: cedulaActualizar, nuevoSegmento });
-      alert("¡Segmento actualizado correctamente!");
-      setSegmentoActual(nuevoSegmento);
-    } catch (error) {
-      console.error("Error al cambiar segmento:", error);
-      alert("Hubo un error al actualizar el segmento.");
-    }
-  };
+const handleCambiarSegmento = async () => {
+  try {
+    const response = await fetch("/api/cambiar-segmento", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cedula: cedulaActualizar, nuevoSegmento })
+    });
+
+    if (!response.ok) throw new Error("Error en la actualización.");
+
+    alert("¡Segmento actualizado correctamente!");
+    setSegmentoActual(nuevoSegmento);
+  } catch (error) {
+    console.error("❌ Error al cambiar segmento:", error);
+    alert("Hubo un error al actualizar el segmento.");
+  }
+};
 
 return (
     <Box sx={{
