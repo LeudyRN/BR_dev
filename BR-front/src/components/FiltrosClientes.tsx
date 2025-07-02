@@ -1,9 +1,6 @@
 import { Select, MenuItem, Button, Box, FormControl, InputLabel, FormHelperText, Tooltip, IconButton } from "@mui/material";
 import { useState, useEffect } from "react";
-<<<<<<< HEAD
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-=======
->>>>>>> 637d44f740325e0150be4366d05ff84952d8d5dd
 
 /** Definir estructura de Filtros */
 interface Filters {
@@ -37,10 +34,6 @@ const menuProps = {
 function FiltrosClientes({ onFilter }: { onFilter: (filtros: Filters) => void }) {
   const [estado, setEstado] = useState("");
   const [segmento, setSegmento] = useState("");
-<<<<<<< HEAD
-=======
-  const [categoria, setCategoria] = useState("");
->>>>>>> 637d44f740325e0150be4366d05ff84952d8d5dd
   const [tipoPersona, setTipoPersona] = useState("");
   const [nacionalidad, setNacionalidad] = useState("");
   const [residencia, setResidencia] = useState("");
@@ -50,7 +43,6 @@ function FiltrosClientes({ onFilter }: { onFilter: (filtros: Filters) => void })
   const [dynamicNacionalidades, setDynamicNacionalidades] = useState<string[]>([]);
   const [dynamicResidencias, setDynamicResidencias] = useState<string[]>([]);
 
-<<<<<<< HEAD
   useEffect(() => {
     fetch("http://localhost:5000/api/ConsultaCliente/segmentos-unicos")
       .then(response => response.json())
@@ -72,28 +64,6 @@ function FiltrosClientes({ onFilter }: { onFilter: (filtros: Filters) => void })
         setDynamicResidencias(data.filter(Boolean));
       })
       .catch(err => console.error("❌ Error al cargar residencias únicas:", err));
-=======
-  const [segmentos, setSegmentos] = useState<string[]>([]);
-  const [categorias, setCategorias] = useState<string[]>([]);
-  const [tiposPersona, setTiposPersona] = useState<string[]>([]);
-
-  /** 🚀 Cargar clientes y extraer opciones únicas con tipado correcto */
-  useEffect(() => {
-    fetch("http://localhost:5000/api/clientes")
-      .then(response => response.json())
-      .then((data: Cliente[]) => {
-        console.log("✅ Datos recibidos:", data);
-
-        const segmentosUnicos = [...new Set(data.map((cliente) => cliente.segmento))];
-        const categoriasUnicas = [...new Set(data.map((cliente) => cliente.categoria))];
-        const tiposPersonaUnicos = [...new Set(data.map((cliente) => cliente.tipoPersona))];
-
-        setSegmentos(segmentosUnicos);
-        setCategorias(categoriasUnicas);
-        setTiposPersona(tiposPersonaUnicos);
-      })
-      .catch(error => console.error("❌ Error al cargar clientes:", error));
->>>>>>> 637d44f740325e0150be4366d05ff84952d8d5dd
   }, []);
 
   const aplicarFiltro = () => {
@@ -141,18 +111,12 @@ function FiltrosClientes({ onFilter }: { onFilter: (filtros: Filters) => void })
         <InputLabel id="segmento-label">Segmento</InputLabel>
         <Select labelId="segmento-label" value={segmento} label="Segmento" onChange={(e) => setSegmento(e.target.value)}>
           <MenuItem value="">Todos</MenuItem>
-<<<<<<< HEAD
           {dynamicSegmentos.map((seg, index) => (
             <MenuItem key={index} value={seg}>{seg}</MenuItem>
-=======
-          {segmentos.map((seg, index) => (
-            <MenuItem key={`${seg}-${index}`} value={seg}>{seg}</MenuItem>
->>>>>>> 637d44f740325e0150be4366d05ff84952d8d5dd
           ))}
         </Select>
       </FormControl>
 
-<<<<<<< HEAD
       {/* Tipo de Persona */}
       <FormControl sx={{ minWidth: 160 }} size="small" error={tipoPersonaError}>
         <InputLabel id="tipoPersona-label">Tipo de Persona</InputLabel>
@@ -186,26 +150,6 @@ function FiltrosClientes({ onFilter }: { onFilter: (filtros: Filters) => void })
           <MenuItem value="">Todas</MenuItem>
           {dynamicNacionalidades.map((nac, index) => (
             <MenuItem key={index} value={nac}>{nac}</MenuItem>
-=======
-      {/* Categoría (Dinámico) */}
-      <FormControl sx={{ minWidth: 160 }} size="small">
-        <InputLabel id="categoria-label">Categoría</InputLabel>
-        <Select labelId="categoria-label" value={categoria} label="Categoría" onChange={(e) => setCategoria(e.target.value)}>
-          <MenuItem value="">Todos</MenuItem>
-          {categorias.map((cat, index) => (
-            <MenuItem key={`${cat}-${index}`} value={cat}>{cat}</MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
-      {/* Tipo de Persona (Dinámico) */}
-      <FormControl sx={{ minWidth: 160 }} size="small">
-        <InputLabel id="tipoPersona-label">Tipo de Persona</InputLabel>
-        <Select labelId="tipoPersona-label" value={tipoPersona} label="Tipo de Persona" onChange={(e) => setTipoPersona(e.target.value)}>
-          <MenuItem value="">Todos</MenuItem>
-          {tiposPersona.map((tipo, index) => (
-            <MenuItem key={`${tipo}-${index}`} value={tipo}>{tipo}</MenuItem>
->>>>>>> 637d44f740325e0150be4366d05ff84952d8d5dd
           ))}
         </Select>
       </FormControl>

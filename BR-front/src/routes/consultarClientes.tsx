@@ -1,9 +1,4 @@
-<<<<<<< HEAD
 import { useEffect, useState, useCallback } from "react";
-=======
-import { useEffect, useState } from "react";
-//import axios from "axios"; //
->>>>>>> 637d44f740325e0150be4366d05ff84952d8d5dd
 import FiltrosClientes from "../components/FiltrosClientes";
 import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box, Typography, Divider, Button as MuiButton, TextField, Button, TablePagination } from "@mui/material";
 
@@ -21,7 +16,6 @@ interface Cliente {
   originalSortID?: string;
 }
 
-<<<<<<< HEAD
 interface LastItemKey {
   lastIdentificacion: string;
   lastOriginalSortID: string;
@@ -233,62 +227,6 @@ function ConsultaClientes() {
 
       .catch(error => console.error("❌ Error en la búsqueda por cédula:", error));
   };
-=======
-
-
-/** Componente Principal */
-function ConsultaClientes() {
-  const [clientesFiltrados, setClientesFiltrados] = useState<Cliente[]>([]);
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [cedulaBusqueda, setCedulaBusqueda] = useState("");
-
-  /**  Cargar clientes desde la API al montar */
-useEffect(() => {
-  fetch("http://localhost:5000/api/clientes")
-    .then(response => response.json())
-    .then((data: Partial<Cliente>[]) => {
-      const clientesMapeados: Cliente[] = data.map((item): Cliente => ({
-        id: item.id ?? 0,
-        nombre: item.nombre ?? "Sin nombre",
-        cedula: item.cedula ?? "N/A",
-        estado: item.estado ?? "Desconocido",
-        segmento: item.segmento ?? "Sin segmento",
-        categoria: item.categoria ?? "Sin categoría",
-        tipoPersona: item.tipoPersona ?? "Sin tipo",
-        fechaVenc: item.fechaVenc ?? "N/A"
-      }));
-
-      setClientesFiltrados(clientesMapeados);
-    })
-    .catch(error => console.error("❌ Error al obtener clientes:", error));
-}, []);
-
-
-  /**  Filtrar clientes desde la API */
-const handleFilterChange = (filtros: { estado: string; segmento: string; categoria: string; tipoPersona: string }) => {
-  const queryParams = new URLSearchParams(filtros).toString();
-
-  fetch(`http://localhost:5000/api/clientes?${queryParams}`)
-    .then(response => response.json())
-    .then(data => setClientesFiltrados(data))
-    .catch(error => console.error("❌ Error al filtrar clientes:", error));
-
-  setPage(0);
-};
-
-  /**  Búsqueda por cédula desde la API */
-const handleBuscarPorCedula = () => {
-  const url = cedulaBusqueda ? `http://localhost:5000/api/clientes/${cedulaBusqueda}` : "http://localhost:5000/api/clientes";
-
-  fetch(url)
-    .then(response => response.json())
-    .then(data => setClientesFiltrados(Array.isArray(data) ? data : [data])) // Asegura que sea un array
-    .catch(error => console.error("❌ Error en la búsqueda por cédula:", error));
-
-  setPage(0);
-};
->>>>>>> 637d44f740325e0150be4366d05ff84952d8d5dd
 
   return (
     <Box sx={{
@@ -396,7 +334,6 @@ const handleBuscarPorCedula = () => {
                   ))}
                 </TableRow>
               </TableHead>
-<<<<<<< HEAD
 
               <TableBody>
                 {visibleClientes.map((cliente: Cliente, index: number) => (
@@ -420,19 +357,6 @@ const handleBuscarPorCedula = () => {
                     <TableCell sx={{ ...cellStyle, borderRight: 0 }}>
                       {cliente.fechaVenc ? cliente.fechaVenc.split("T")[0] : "N/A"}
                     </TableCell>
-=======
-             <TableBody>
-                {clientesFiltrados.slice(page * rowsPerPage, Math.min(clientesFiltrados.length, (page + 1) * rowsPerPage)).map((cliente, index) => (
-                  <TableRow key={`${cliente.id}-${index}`} hover>
-                    <TableCell>{cliente.id}</TableCell>
-                    <TableCell>{cliente.nombre}</TableCell>
-                    <TableCell>{cliente.cedula}</TableCell>
-                    <TableCell>{cliente.estado}</TableCell>
-                    <TableCell>{cliente.segmento}</TableCell>
-                    <TableCell>{cliente.categoria}</TableCell>
-                    <TableCell>{cliente.tipoPersona}</TableCell>
-                    <TableCell>{cliente.fechaVenc}</TableCell>
->>>>>>> 637d44f740325e0150be4366d05ff84952d8d5dd
                   </TableRow>
                 ))}
               </TableBody>

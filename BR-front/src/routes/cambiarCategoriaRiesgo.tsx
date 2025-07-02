@@ -1,10 +1,6 @@
 import { useState, type SyntheticEvent } from "react";
 import { TextField, Button, Box, Paper, Typography, Divider, Tooltip, IconButton, Snackbar, Alert } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-<<<<<<< HEAD
-=======
-//import axios from "axios";
->>>>>>> 637d44f740325e0150be4366d05ff84952d8d5dd
 
 function CambioCategoriaRiesgo() {
   const [cedulaConsulta, setCedulaConsulta] = useState("");
@@ -12,7 +8,6 @@ function CambioCategoriaRiesgo() {
   const [cedulaActualizar, setCedulaActualizar] = useState("");
   const [nuevaCategoria, setNuevaCategoria] = useState("");
 
-<<<<<<< HEAD
   // Estados para Snackbar (notificaciones)
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -112,41 +107,6 @@ function CambioCategoriaRiesgo() {
       showSnackbar(`Hubo un error al actualizar la categoría: ${(error as Error).message}`, "error");
     }
   };
-=======
-  /** 🔹 Consultar el riesgo del cliente */
-const handleConsultarRiesgo = async () => {
-  try {
-    const response = await fetch(`/api/consultar-riesgo?cedula=${cedulaConsulta}`);
-
-    if (!response.ok) throw new Error("Error al consultar riesgo.");
-
-    const data = await response.json();
-    setRiesgoActual(data.riesgo);
-  } catch (error) {
-    console.error("❌ Error al consultar riesgo:", error);
-    alert("Hubo un error al consultar la categoría de riesgo.");
-  }
-};
-
-  /** 🔹 Cambiar la categoría de riesgo */
- const handleCambiarCategoria = async () => {
-  try {
-    const response = await fetch("/api/cambiar-riesgo", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cedula: cedulaActualizar, nuevaCategoria })
-    });
-
-    if (!response.ok) throw new Error("Error en la actualización.");
-
-    alert("¡Categoría de riesgo actualizada correctamente!");
-    setRiesgoActual(nuevaCategoria);
-  } catch (error) {
-    console.error("❌ Error al cambiar categoría de riesgo:", error);
-    alert("Hubo un error al actualizar la categoría.");
-  }
-};
->>>>>>> 637d44f740325e0150be4366d05ff84952d8d5dd
 
   return (
     <Box sx={{

@@ -37,7 +37,6 @@ const sqlConfig = {
   options: { encrypt: true, trustServerCertificate: true },
 };
 
-<<<<<<< HEAD
 // Variables para los pools de conexiones
 let oraclePoolCRM = null; // Pool Oracle CRM
 let oracleFocusPool = null; // Pool Oracle FOCUS
@@ -53,11 +52,6 @@ const oracleBrokerConfig = {
 
 /** Inicializa el pool de conexiones a Oracle (CRM/UATIP22) */
 const initOraclePool = async () => {
-=======
-
-// 🔹 Función para conectar a Oracle
-const connectOracle = async () => {
->>>>>>> 637d44f740325e0150be4366d05ff84952d8d5dd
   try {
     if (!oraclePoolCRM) {
       oraclePoolCRM = await oracledb.createPool(oracleConfig);
@@ -197,7 +191,6 @@ module.exports = {
   getOraclePoolConnection, // incluye reintentos
   closeOraclePool,
 
-<<<<<<< HEAD
   // Oracle BROKER (conexión directa)
   connectOracleBroker,
 
@@ -211,16 +204,3 @@ module.exports = {
   getFocusConnection, // incluye reintentos
   closeFocusPool,
 };
-=======
-const getConnection = async () => {
-  try {
-    const pool = await connectSQLServer();
-    return pool; // Devuelve el pool completo
-  } catch (error) {
-    console.error("❌ Error al obtener la conexión a SQL Server:", error.message);
-    throw error;
-  }
-};
-
-module.exports = { connectOracle, connectSQLServer, getConnection };
->>>>>>> 637d44f740325e0150be4366d05ff84952d8d5dd

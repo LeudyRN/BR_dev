@@ -1,11 +1,5 @@
-<<<<<<< HEAD
 import { useState, type SyntheticEvent } from "react";
 import { TextField, Button, Box, Paper, Typography, Divider, Dialog, DialogTitle, DialogContent, DialogActions, Snackbar, Alert, Select, MenuItem, FormControl, InputLabel } from "@mui/material";
-=======
-import { useState } from "react";
-import { TextField, Button, Box, Paper, Typography, Divider, Dialog, DialogTitle, DialogContent, DialogActions } from "@mui/material";
-//import axios from "axios";
->>>>>>> 637d44f740325e0150be4366d05ff84952d8d5dd
 
 function ActualizarBuro() {
   // Estados para la gestión y modificación del buró interno (API de BD)
@@ -22,7 +16,6 @@ function ActualizarBuro() {
   const [cedula1, setCedula1] = useState("");
   const [cedula2, setCedula2] = useState("");
 
-<<<<<<< HEAD
   // Estados para Snackbar (notificaciones)
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -158,61 +151,6 @@ function ActualizarBuro() {
       showSnackbar(`Hubo un error al transferir el buró: ${(error as Error).message}`, "error");
     }
   };
-=======
-  /**  Consultar el buró del cliente */
-const handleConsultarBuro = async () => {
-  try {
-    const response = await fetch(`/api/consultar-buro?cedula=${cedulaConsulta}`);
-
-    if (!response.ok) throw new Error("Error al consultar buró.");
-
-    const data = await response.json();
-    setBuroActual(data.buro);
-    setNuevoBuro(data.buro); // Inicializa el buró en el campo editable
-    setOpenDialog(true); // Abre el pop-up
-  } catch (error) {
-    console.error("❌ Error al consultar buró:", error);
-    alert("Hubo un error al consultar el buró.");
-  }
-};
-
-  /**  Guardar el nuevo buró */
-const handleGuardarBuro = async () => {
-  try {
-    const response = await fetch("/api/modificar-buro", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cedula: cedulaConsulta, buro: nuevoBuro })
-    });
-
-    if (!response.ok) throw new Error("Error al modificar buró.");
-
-    alert("¡Buró actualizado correctamente!");
-    setOpenDialog(false);
-  } catch (error) {
-    console.error("❌ Error al modificar buró:", error);
-    alert("Hubo un error al actualizar el buró.");
-  }
-};
-
-  /**  Actualizar el buró de un cliente usando otro */
-const handleActualizarBuro = async () => {
-  try {
-    const response = await fetch("/api/actualizar-buro", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cedula1, cedula2 })
-    });
-
-    if (!response.ok) throw new Error("Error al actualizar buró.");
-
-    alert("¡Buró transferido correctamente!");
-  } catch (error) {
-    console.error("❌ Error al actualizar buró:", error);
-    alert("Hubo un error al actualizar el buró.");
-  }
-};
->>>>>>> 637d44f740325e0150be4366d05ff84952d8d5dd
 
   return (
     <Box sx={{

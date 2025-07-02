@@ -31,17 +31,9 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, async () => {
   try {
-<<<<<<< HEAD
     await initOraclePool();
     await initSQLPool();
     await initFocusPool();
-=======
-    const oracleConnection = await connectOracle();
-    const sqlServerConnection = await connectSQLServer();
-
-    console.log("✅ Conectado a Oracle:", !!oracleConnection);
-    console.log("✅ Conectado a SQL Server:", !!sqlServerConnection);
->>>>>>> 637d44f740325e0150be4366d05ff84952d8d5dd
 
     console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
   } catch (error) {

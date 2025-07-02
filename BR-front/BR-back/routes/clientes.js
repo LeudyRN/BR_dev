@@ -1,6 +1,5 @@
 const express = require("express");
 const router = express.Router();
-<<<<<<< HEAD
 // CORRECCIÓN: Importar getOraclePoolConnection, que es la función correcta del pool CRM
 const { getOraclePoolConnection } = require("../config/db");
 const oracledb = require("oracledb");
@@ -31,21 +30,8 @@ function buildKeysetCondition(tipoPersona, lastIdentificacion, lastOriginalSortI
 router.get("/", async function ConsultaClientes(req, res) {
   const startTime = process.hrtime.bigint();
   let connection; // Declarar connection aquí para que esté disponible en finally
-=======
-const { connectOracle } = require("../config/db");
-
-let dbConnection = null; // 🔹 Mantener la conexión viva
-
-async function getOracleConnection() {
-  if (!dbConnection) {
-    dbConnection = await connectOracle();
-  }
-  return dbConnection;
-}
->>>>>>> 637d44f740325e0150be4366d05ff84952d8d5dd
 
   try {
-<<<<<<< HEAD
     // CORRECCIÓN: Usar getOraclePoolConnection
     connection = await getOraclePoolConnection();
 
@@ -194,66 +180,6 @@ async function getOracleConnection() {
     console.log(`✅ Físicos obtenidos: ${clientes.length} | Tiempo: ${Number(endTime - startTime) / 1_000_000} ms`);
 
     return res.status(200).json({ clientes, totalCount, hasNextPage, lastItemKey });
-=======
-    const connection = await getOracleConnection();
-
-    const queryFisica = `
-SELECT
-  CAST(NULL AS NUMBER) AS id,
-  TRIM(A.FST_NAME || ' ' || A.MID_NAME || ' ' || A.LAST_NAME || ' ' || A.MAIDEN_NAME) AS nombre,
-  A.SOC_SECURITY_NUM AS cedula,
-  'activo' AS estado,
-  H.X_CODIGO AS segmento,
-  'Bajo' AS categoria,
-  'Física' AS tipoPersona,
-  TO_CHAR(X.X_FECHA_VENC_PASA, 'YYYY-MM-DD') AS fechaVenc
-FROM SIEBEL.S_CONTACT A
-LEFT JOIN SIEBEL.CX_SEGMENTOS H ON H.ROW_ID = A.X_SEG_ID
-LEFT JOIN SIEBEL.S_CONTACT_X X ON X.PAR_ROW_ID = A.ROW_ID
-`;
-
-    const queryJuridica = `
-SELECT
-  CAST(NULL AS NUMBER) AS id,
-  o.alias_name AS nombre,
-  o.ou_num AS cedula,
-  o.cust_stat_cd AS estado,
-  h.x_codigo AS segmento,
-  f.desc_text AS categoria,
-  x.x_attrib_85 AS tipoPersona,
-  NULL AS fechaVenc
-FROM siebel.s_org_ext o
-LEFT JOIN siebel.s_org_ext_x x ON o.row_id = x.par_row_id
-LEFT JOIN siebel.eai_view_lst_of_val f
-  ON f.val = x.x_attrib_105
-  AND f.type = 'BR_PJ_TIPO_CLIENTE'
-  AND f.lang_id = 'ESN'
-  AND f.active_flg = 'Y'
-LEFT JOIN siebel.cx_segmentos h ON h.row_id = o.x_seg_id
-`;
-
-    // Ejecutarlas separadas y luego unir resultados:
-    const [result1, result2] = await Promise.all([
-      connection.execute(queryFisica),
-      connection.execute(queryJuridica)
-    ]);
-
-    const clientes = result.rows.map(row => ({
-      id: row[0],
-      nombre: row[1],
-      cedula: row[2],
-      estado: row[3],
-      segmento: row[4],
-      categoria: row[5],
-      tipoPersona: row[6],
-      fechaVenc: row[7]
-    }));
-
-    console.log("✅ Clientes obtenidos:", clientes.length);
-    res.status(200).json(clientes); // Enviar objetos, no arrays crudos
-    ;
-
->>>>>>> 637d44f740325e0150be4366d05ff84952d8d5dd
   } catch (err) {
     const endTime = process.hrtime.bigint();
     console.error(`❌ Error: (${Number(endTime - startTime) / 1_000_000} ms):`, err.message);
