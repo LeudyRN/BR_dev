@@ -1,4 +1,5 @@
 import { useState } from "react";
+<<<<<<< HEAD
 import { TextField, Button, Box, Paper, Typography, Divider, Snackbar, Alert } from "@mui/material";
 
 interface ClienteSegmentoInfo {
@@ -6,6 +7,10 @@ interface ClienteSegmentoInfo {
   segmento: string;
   tipoPersona?: string; // Propiedad opcional para mostrar si viene de la consulta, pero no se envía
 }
+=======
+import { TextField, Button, Box, Paper, Typography, Divider } from "@mui/material";
+//import axios from "axios";
+>>>>>>> 637d44f740325e0150be4366d05ff84952d8d5dd
 
 function CambioSegmento() {
   const [cedulaConsulta, setCedulaConsulta] = useState("");
@@ -15,6 +20,7 @@ function CambioSegmento() {
   // Eliminado: const [tipoIdConsulta, setTipoIdConsulta] = useState<'Cédula' | 'RNC'>('Cédula');
   // Eliminado: const [tipoIdActualizar, setTipoIdActualizar] = useState<'Cédula' | 'RNC'>('Cédula');
 
+<<<<<<< HEAD
   // Estados para Snackbar
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
@@ -122,6 +128,38 @@ function CambioSegmento() {
       setSnackbarOpen(true);
     }
   };
+=======
+  /**  Consultar el segmento del cliente */
+const handleConsultarSegmento = async () => {
+  try {
+    const response = await fetch(`/api/consultar-segmento?cedula=${cedulaConsulta}`);
+    const data = await response.json();
+    setSegmentoActual(data.segmento);
+  } catch (error) {
+    console.error("❌ Error al consultar segmento:", error);
+    alert("Hubo un error al consultar el segmento.");
+  }
+};
+
+  /**  Actualizar el segmento */
+const handleCambiarSegmento = async () => {
+  try {
+    const response = await fetch("/api/cambiar-segmento", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cedula: cedulaActualizar, nuevoSegmento })
+    });
+
+    if (!response.ok) throw new Error("Error en la actualización.");
+
+    alert("¡Segmento actualizado correctamente!");
+    setSegmentoActual(nuevoSegmento);
+  } catch (error) {
+    console.error("❌ Error al cambiar segmento:", error);
+    alert("Hubo un error al actualizar el segmento.");
+  }
+};
+>>>>>>> 637d44f740325e0150be4366d05ff84952d8d5dd
 
   const handleCloseSnackbar = (event?: React.SyntheticEvent | Event, reason?: string) => {
     if (reason === 'clickaway') {
