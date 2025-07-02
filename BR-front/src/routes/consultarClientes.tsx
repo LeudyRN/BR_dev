@@ -1,9 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import FiltrosClientes from "../components/FiltrosClientes";
-import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box, Typography, Divider, TablePagination, Button as MuiButton } from "@mui/material"; // Removed ButtonGroup as it's not used directly here
-import { TextField, Button } from "@mui/material";
+import { Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Paper, Box, Typography, Divider, Button as MuiButton, TextField, Button, TablePagination } from "@mui/material";
 
-/** Interface para Clientes */
 interface Cliente {
   id: number;
   nombre: string;
@@ -13,23 +11,24 @@ interface Cliente {
   segmento: string;
   tipoPersona: string;
   fechaVenc: string;
+  nacionalidad?: string;      // <-- Nuevo
+  residencia?: string;        // <-- Nuevo
   originalSortID?: string;
 }
 
-/** Interfaz para la clave del último elemento (Keyset Pagination) */
 interface LastItemKey {
   lastIdentificacion: string;
   lastOriginalSortID: string;
 }
 
-/** Interfaz para los filtros */
 interface Filters {
   estado: string;
   segmento: string;
   tipoPersona: string;
+  nacionalidad?: string;
+  residencia?: string;
 }
 
-/** Interfaz para la respuesta de la API de paginación Keyset */
 interface ApiResponse {
   clientes: Cliente[];
   totalCount: number;
@@ -37,7 +36,6 @@ interface ApiResponse {
   lastItemKey: LastItemKey | null;
 }
 
-/** Componente Principal */
 function ConsultaClientes() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [totalCount, setTotalCount] = useState(0);
@@ -46,27 +44,34 @@ function ConsultaClientes() {
   const [hasNextPage, setHasNextPage] = useState(false);
   const [currentFilters, setCurrentFilters] = useState<Filters>({ estado: "", segmento: "", tipoPersona: "" });
 
-  // Keyset Pagination specific states
-  // pageKeys[0] is null (for page 1). pageKeys[i] is the lastItemKey needed to fetch page (i+1).
   const [pageKeys, setPageKeys] = useState<(LastItemKey | null)[]>([null]);
-  const [currentPageNum, setCurrentPageNum] = useState(1); // 1-based current page number
+  const [currentPageNum, setCurrentPageNum] = useState(1);
 
-  /** Cargar clientes desde la API usando Keyset Pagination y filtros */
+  // NUEVO: Estado para subpaginación interna
+  const [subPageNum, setSubPageNum] = useState(1);
+  const pageSize = 10; // Número de filas que queremos mostrar por pantalla
+
   const fetchClientsData = useCallback(async (
-    keyToFetchWith: LastItemKey | null, // The key from the END of the PREVIOUS page
+    keyToFetchWith: LastItemKey | null,
     currentLimit: number,
     filters: Filters
   ) => {
     try {
+      if (!filters.tipoPersona) {
+        console.warn("No se ha especificado tipoPersona. No se cargan clientes.");
+        return null;
+      }
+
       let url = `http://localhost:5000/api/ConsultaCliente?limit=${currentLimit}`;
 
       if (keyToFetchWith) {
-        url += `&lastIdentificacion=${keyToFetchWith.lastIdentificacion}&lastOriginalSortID=${keyToFetchWith.lastOriginalSortID}`;
+        url += `&lastIdentificacion=${encodeURIComponent(keyToFetchWith.lastIdentificacion)}&lastOriginalSortID=${encodeURIComponent(keyToFetchWith.lastOriginalSortID)}`;
       }
-      if (filters.estado) url += `&estado=${filters.estado}`;
-      if (filters.segmento) url += `&segmento=${filters.segmento}`;
-      if (filters.tipoPersona) url += `&tipoPersona=${filters.tipoPersona}`;
-
+      if (filters.estado) url += `&estado=${encodeURIComponent(filters.estado)}`;
+      if (filters.segmento) url += `&segmento=${encodeURIComponent(filters.segmento)}`;
+      if (filters.tipoPersona) url += `&tipoPersona=${encodeURIComponent(filters.tipoPersona)}`;
+      if (filters.nacionalidad) url += `&nacionalidad=${encodeURIComponent(filters.nacionalidad)}`;
+      if (filters.residencia) url += `&residencia=${encodeURIComponent(filters.residencia)}`;
 
       console.log(`Frontend - Fetching URL (Keyset with Filters): ${url}`);
       const response = await fetch(url);
@@ -81,94 +86,124 @@ function ConsultaClientes() {
         segmento: item.segmento ?? "Sin segmento",
         tipoPersona: item.tipoPersona ?? "Sin tipo",
         fechaVenc: item.fechaVenc ?? "N/A",
+        nacionalidad: item.nacionalidad ?? "N/A",
+        residencia: item.residencia ?? "N/A",
         originalSortID: item.originalSortID ?? "0"
       }));
+
 
       setClientes(clientesMapeados);
       setTotalCount(data.totalCount || 0);
       setHasNextPage(data.hasNextPage);
-      
-      // Return the new lastItemKey to be handled by the calling useEffect
+      setSubPageNum(1);
+
       return data.lastItemKey;
 
     } catch (error) {
       console.error("❌ Error al obtener clientes:", error);
-      setClientes([]); // Clear clients on error
+      setClientes([]);
       setTotalCount(0);
       setHasNextPage(false);
-      return null; // Return null if fetch fails
-      // Optional: Show an error message to the user
+      return null;
     }
-  }, []); // Empty dependencies for useCallback means it doesn't change unless its definition changes.
-           // This function will be called with explicit arguments.
+  }, []);
 
-  // Primary effect to trigger data loading
   useEffect(() => {
     const fetchPage = async () => {
-        // Only fetch if not in search mode
-        if (cedulaBusqueda.trim() === "") {
-            // Get the key for the current page from pageKeys array
-            const keyToUse = pageKeys[currentPageNum - 1]; // currentPageNum is 1-based, array index is 0-based
-            const nextKey = await fetchClientsData(keyToUse, limit, currentFilters);
-
-            // Update pageKeys if we've successfully loaded a new page
-            // and we are at the end of our current pageKeys history (navigating forward)
-            if (nextKey && currentPageNum === pageKeys.length) {
-                setPageKeys(prev => [...prev, nextKey]);
-            }
+      if (cedulaBusqueda.trim() === "") {
+        if (!currentFilters.tipoPersona) {
+          console.warn("No se ha especificado tipoPersona. No se cargan clientes.");
+          return;
         }
+
+        const keyToUse = pageKeys[currentPageNum - 1];
+        const nextKey = await fetchClientsData(keyToUse, limit, currentFilters);
+
+        if (nextKey && currentPageNum === pageKeys.length) {
+          setPageKeys(prev => [...prev, nextKey]);
+        }
+      }
     };
     fetchPage();
-  }, [limit, currentFilters, cedulaBusqueda, currentPageNum, pageKeys, fetchClientsData]);
+  }, [limit, currentFilters, cedulaBusqueda, currentPageNum, pageKeys.length, fetchClientsData]);
 
+  useEffect(() => {
+    setPageKeys([null]);
+    setCurrentPageNum(1);
+    setClientes([]);
+    setTotalCount(0);
+    setSubPageNum(1); // Reiniciar subpaginación cuando cambian filtros
+  }, [currentFilters]);
 
-  // Manejar el cambio de filas por página (limit)
+  // Slice para mostrar solo lo que corresponde en la subpaginación
+  const startIndex = (subPageNum - 1) * pageSize;
+  const visibleClientes = clientes.slice(startIndex, startIndex + pageSize);
+
+  // Manejar cambio de filas por página (limit)
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLTextAreaElement | HTMLInputElement>) => {
     const newLimit = parseInt(event.target.value, 10);
     setLimit(newLimit);
-    setCurrentPageNum(1); // Reset to the first visual page
-    setPageKeys([null]); // Reset Keyset pagination history
+    setCurrentPageNum(1);
+    setPageKeys([null]);
+    setSubPageNum(1); // Reiniciar subpaginación también
   };
 
-  // Manejar la navegación a la siguiente página
+  // Navegar páginas completas (backend)
   const handleNextPage = () => {
-    if (hasNextPage) { // We have a next page confirmed by API
+    if (hasNextPage) {
       setCurrentPageNum(prev => prev + 1);
-      // useEffect will trigger fetchClientsData based on currentPageNum change
     }
   };
 
-  // Manejar la navegación a la página anterior (más complejo con Keyset Pagination)
   const handlePrevPage = () => {
-    if (currentPageNum > 1) { // Ensure we are not on the first page
+    if (currentPageNum > 1) {
       setCurrentPageNum(prev => prev - 1);
-      // We need to slice off the "future" keys if the user navigates back and then forward again
-      // The useEffect will handle fetching the correct page based on the new currentPageNum
       setPageKeys(prev => prev.slice(0, currentPageNum - 1));
     }
   };
 
+  const handleSubPageNext = () => {
+    if (subPageNum < Math.ceil(clientes.length / pageSize)) {
+      setSubPageNum(prev => prev + 1);
+    }
 
-  /** Manejar el cambio de filtros y reiniciar la paginación */
-  const handleFilterChange = (newFilters: Filters) => {
-    setCurrentFilters(newFilters); // Update active filters
-    // Reset pagination to apply filters from the first page
-    setCurrentPageNum(1);
-    setPageKeys([null]); // Reset Keyset pagination history
-    // fetchClientsData will be triggered by useEffect due to 'currentFilters' dependency
   };
 
-  /** Búsqueda por cédula desde la API (sin Keyset, usa ruta dedicada) */
+  const cellStyle = {
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+    py: 1.2,
+    borderRight: '1px solid rgba(224, 224, 224, 1)',
+    fontFamily: 'Inter, sans-serif',
+  };
+
+  const handleSubPagePrev = () => {
+    if (subPageNum > 1) {
+      setSubPageNum(prev => prev - 1);
+    }
+  };
+
+  // Manejar cambio de filtros
+  const handleFilterChange = (newFilters: Filters) => {
+    setCurrentFilters(newFilters);
+    setCurrentPageNum(1);
+    setPageKeys([null]);
+    setSubPageNum(1);
+  };
+
+  // Búsqueda por cédula (sin keyset)
   const handleBuscarPorCedula = () => {
     const url = cedulaBusqueda
       ? `http://localhost:5000/api/ConsultaCliente/${cedulaBusqueda}`
-      : `http://localhost:5000/api/ConsultaCliente?limit=${limit}`; // When clearing search, revert to general list's first page
+      : `http://localhost:5000/api/ConsultaCliente?limit=${limit}`;
 
     fetch(url)
       .then(response => response.json())
       .then((data: Cliente | Cliente[] | ApiResponse) => {
         let clientesArray: Cliente[] = [];
         let fetchedTotalCount = 0;
+        let fetchedHasNextPage = false;
 
         if (Array.isArray(data)) {
           clientesArray = data;
@@ -176,6 +211,7 @@ function ConsultaClientes() {
         } else if ('clientes' in data && 'totalCount' in data) {
           clientesArray = (data as ApiResponse).clientes;
           fetchedTotalCount = (data as ApiResponse).totalCount || 0;
+          fetchedHasNextPage = (data as ApiResponse).hasNextPage || false;
         } else {
           clientesArray = [data as Cliente];
           fetchedTotalCount = 1;
@@ -183,27 +219,36 @@ function ConsultaClientes() {
 
         setClientes(clientesArray);
         setTotalCount(fetchedTotalCount);
-        // Reset Keyset Pagination states when doing a search
+        setHasNextPage(fetchedHasNextPage); // 👈 este era importante
         setCurrentPageNum(1);
         setPageKeys([null]);
-        setHasNextPage(false); // Search results usually don't have next page logic unless explicitly handled
-        setCurrentFilters({ estado: "", segmento: "", tipoPersona: "" }); // Clear filters when searching by cedula
+        setSubPageNum(1); // Si usas subpaginación
       })
+
       .catch(error => console.error("❌ Error en la búsqueda por cédula:", error));
   };
 
-
   return (
     <Box sx={{
-      minHeight: "90vh",
-      marginTop: "30px",
+      minHeight: "100vh",
       p: 1,
       backgroundColor: "background.default",
-      width: "1200px",
-      marginLeft: "50vh"
+      width: "1600px",
+      marginLeft: "14vh"
     }}>
 
-      <Paper elevation={3} sx={{ maxWidth: 1200, mx: "auto", p: 4, borderRadius: 4 }}>
+      <Paper elevation={3} sx={{
+        maxWidth: '100%',
+        mx: "auto",
+        p: 4,
+        borderRadius: 4,
+        flexGrow: 1,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 2,
+        minHeight: '400px'
+      }}>
+
         <Typography variant="h5" fontWeight="bold" gutterBottom color="primary">
           Consultar Clientes
         </Typography>
@@ -222,89 +267,157 @@ function ConsultaClientes() {
             onChange={(e) => {
               const nuevaCedula = e.target.value;
               setCedulaBusqueda(nuevaCedula);
-
               if (nuevaCedula.trim() === "") {
-                // If search is cleared, reset to initial Keyset pagination and clear filters
                 setCurrentPageNum(1);
                 setPageKeys([null]);
                 setHasNextPage(false);
-                setCurrentFilters({ estado: "", segmento: "", tipoPersona: "" }); // Clear filters
+                setCurrentFilters({ estado: "", segmento: "", tipoPersona: "" });
+                setSubPageNum(1);
               }
             }}
+
+            sx={{ width: 280 }}
+            InputProps={{
+              sx: { height: 50 }
+            }}
+
           />
           <Button variant="contained" color="primary" onClick={handleBuscarPorCedula}>
             Consultar
           </Button>
         </Box>
 
-        <Box sx={{ maxHeight: limit > 10 ? "500px" : "none", overflowY: limit > 10 ? "auto" : "hidden" }}>
-          <TableContainer component={Paper} sx={{ boxShadow: 1, borderRadius: 2 }}>
-            <Table>
+        {/* CONTENEDOR DE LA TABLA CON SCROLL VERTICAL */}
+        <Box sx={{
+          maxHeight: '300px', // Altura fija para la tabla, ajusta si es necesario (ej: 280px para 5-6 filas)
+          overflowY: 'auto', // Siempre permite el scroll vertical si el contenido excede el maxHeight
+          width: '100%',
+          borderRadius: 2,
+          // 'my: 4' y 'marginTop: -5px' de TableContainer original se manejan externamente o pueden ajustarse aquí si es necesario
+        }}>
+          <TableContainer component={Paper}
+            sx={{
+              boxShadow: 3,
+              borderRadius: 2,
+              overflowX: 'auto', // Sigue permitiendo el scroll horizontal
+              // overflowY y maxHeight ya no son necesarios aquí, el Box padre los controla
+              width: '100%',
+              mx: 'auto',
+              // Los márgenes `my: 4` y `marginTop: -5px` deberían estar en el Box que envuelve,
+              // o si se quieren aplicar a TableContainer, que no entre en conflicto con el Box padre.
+              // Para este fragmento, se asume que el contenedor padre (Box) maneja el espaciado vertical
+              // o que estos estilos son deseados específicamente en el TableContainer sin conflicto.
+              my: 4, // Mantenido del código original del usuario
+              marginTop: '-5px', // Mantenido del código original del usuario
+            }}
+          >
+            <Table sx={{ minWidth: 1000, tableLayout: "auto" }} aria-label="tabla de clientes">
               <TableHead sx={{ backgroundColor: "#002f6c" }}>
                 <TableRow>
-                  <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>ID</TableCell>
-                  <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Nombre</TableCell>
-                  <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Cédula/RNC</TableCell>
-                  <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Estado</TableCell>
-                  <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Segmento</TableCell>
-                  <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Tipo de Persona</TableCell>
-                  <TableCell sx={{ color: "#fff", fontWeight: "bold" }}>Fecha de vencimiento</TableCell>
+                  {[
+                    "ID", "Nombre", "Cédula/RNC", "Estado", "Segmento",
+                    "Tipo de Persona", "Nacionalidad", "Residencia", "Fecha de vencimiento"
+                  ].map((header, index) => (
+                    <TableCell
+                      key={index}
+                      sx={{
+                        color: "#fff",
+                        fontWeight: "bold",
+                        py: 1.5,
+                        textTransform: 'uppercase',
+                        borderBottom: '2px solid rgba(255, 255, 255, 0.2)',
+                        whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {header}
+                    </TableCell>
+                  ))}
                 </TableRow>
               </TableHead>
 
               <TableBody>
-                {clientes.map((cliente, index) => (
-                  <TableRow key={`${cliente.identificacion}-${cliente.originalSortID}-${index}`} hover>
-                    <TableCell>{cliente.id}</TableCell>
-                    <TableCell>{cliente.nombre}</TableCell>
-                    <TableCell>{cliente.cedula}</TableCell>
-                    <TableCell>{cliente.estado}</TableCell>
-                    <TableCell>{cliente.segmento}</TableCell>
-                    <TableCell>{cliente.tipoPersona}</TableCell>
-                    <TableCell>{cliente.fechaVenc}</TableCell>
+                {visibleClientes.map((cliente: Cliente, index: number) => (
+                  <TableRow
+                    key={`${cliente.identificacion}-${cliente.originalSortID}-${index}`}
+                    hover
+                    sx={{
+                      '&:nth-of-type(odd)': { backgroundColor: 'action.hover' },
+                      '&:last-child td, &:last-child th': { border: 0 },
+                      transition: 'background-color 0.2s ease-in-out',
+                    }}
+                  >
+                    <TableCell sx={cellStyle}>{cliente.id}</TableCell>
+                    <TableCell sx={cellStyle}>{cliente.nombre}</TableCell>
+                    <TableCell sx={cellStyle}>{cliente.identificacion}</TableCell>
+                    <TableCell sx={cellStyle}>{cliente.estado}</TableCell>
+                    <TableCell sx={cellStyle}>{cliente.segmento}</TableCell>
+                    <TableCell sx={cellStyle}>{cliente.tipoPersona}</TableCell>
+                    <TableCell sx={cellStyle}>{cliente.nacionalidad ?? "N/A"}</TableCell>
+                    <TableCell sx={cellStyle}>{cliente.residencia ?? "N/A"}</TableCell>
+                    <TableCell sx={{ ...cellStyle, borderRight: 0 }}>
+                      {cliente.fechaVenc ? cliente.fechaVenc.split("T")[0] : "N/A"}
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
-
             </Table>
           </TableContainer>
         </Box>
 
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', mt: 3, gap: 2 }}>
-          <MuiButton
-            variant="contained"
-            onClick={handlePrevPage}
-            disabled={currentPageNum === 1}
-          >
-            Anterior
-          </MuiButton>
-          <Typography>Página: {currentPageNum}</Typography>
-          <MuiButton
-            variant="contained"
-            onClick={handleNextPage}
-            disabled={!hasNextPage}
-          >
-            Siguiente
-          </MuiButton>
-        </Box>
+        {/* Navegación subpáginas internas */}
+        {clientes.length > pageSize && (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3, mb: 2 }}>
+            <Paper elevation={4} sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 3,
+              p: 2,
+              px: 3,
+              borderRadius: 3,
+              backgroundColor: 'background.paper',
+              boxShadow: '0px 4px 10px rgba(0, 0, 0, 0.1)'
+            }}>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSubPagePrev}
+                disabled={subPageNum === 1}
+                sx={{ minWidth: 150, py: 1, fontWeight: 'bold', borderRadius: 2 }}
+              >
+                &lt;  Anterior
+              </Button>
+              <Typography variant="h6" sx={{ fontWeight: 'medium', color: 'text.primary', minWidth: 150, textAlign: 'center' }}>
+                Páginas: {subPageNum} / {Math.ceil(clientes.length / pageSize)}
+              </Typography>
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={handleSubPageNext}
+                disabled={subPageNum >= Math.ceil(clientes.length / pageSize)}
+                sx={{ minWidth: 150, py: 1, fontWeight: 'bold', borderRadius: 2 }}
+              >
+                Siguiente &gt;
+              </Button>
+            </Paper>
+          </Box>
+        )}
 
         <TablePagination
-          rowsPerPageOptions={[10, 15, 20]}
+          rowsPerPageOptions={[10, 50, 100, 300, 1000, 4000, 8000, 32000, 100000, 1000000, 2000000, 5000000]}
           component="div"
           count={totalCount}
           rowsPerPage={limit}
-          page={currentPageNum - 1} // TablePagination expects page 0-based
-          onPageChange={() => {}} // Empty to satisfy TypeScript, as navigation is controlled by custom buttons
+          page={currentPageNum - 1}
+          onPageChange={() => { }}
           onRowsPerPageChange={handleChangeRowsPerPage}
           labelRowsPerPage="Filas por página:"
           sx={{
-            mt: 1,
-            "& .MuiTablePagination-actions": { display: 'none' }, // Hide MUI's default pagination arrows and numbers
+            mb: -1,
+            "& .MuiTablePagination-actions": { display: 'none' },
             "& .MuiTablePagination-toolbar": { justifyContent: 'center' },
             "& .MuiTablePagination-root": { fontSize: "1.2rem" }
           }}
         />
-
       </Paper>
     </Box>
   );

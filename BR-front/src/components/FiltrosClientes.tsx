@@ -1,46 +1,95 @@
-import { Select, MenuItem, Button, Box, FormControl, InputLabel } from "@mui/material";
+import { Select, MenuItem, Button, Box, FormControl, InputLabel, FormHelperText, Tooltip, IconButton } from "@mui/material";
 import { useState, useEffect } from "react";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 /** Definir estructura de Filtros */
 interface Filters {
   estado: string;
   segmento: string;
   tipoPersona: string;
+  nacionalidad: string;
+  residencia: string;
 }
 
-// Opciones de Tipo de Persona y Estado - Mantener hardcodeadas si son fijas y no vienen de DB
 const hardcodedTiposPersona = ["Física", "Empresa"];
-// Se ha añadido "Rechazado" a las opciones de estado
-const hardcodedEstados = ["Activo", "Inactivo", "Creado", "Rechazado"];
 
+const hardcodedEstados = [
+  "CANCELADO", "ACTIVE", "INICIADO", "CALIFICADO", "EN PROCESO",
+  "DEVUELTO/INFORMACIÓN FALTANTE", "RECHAZADO", "ACTIVO", "PENDIENTE",
+  "VALIDADO", "APROBADO", "EN INVESTIGACIÓN", "CREADO"
+];
+
+// Opcional: Puedes mantener hardcodedResidencias o solo usar la dinámica
+// const hardcodedResidencias = ["PERMANENTE", "TEMPORAL", "NO RESIDENTE", "CIUDADANO"];
+
+const menuProps = {
+  PaperProps: {
+    style: {
+      maxHeight: 340, 
+      width: 350,
+    },
+  },
+};
 
 function FiltrosClientes({ onFilter }: { onFilter: (filtros: Filters) => void }) {
   const [estado, setEstado] = useState("");
   const [segmento, setSegmento] = useState("");
   const [tipoPersona, setTipoPersona] = useState("");
+  const [nacionalidad, setNacionalidad] = useState("");
+  const [residencia, setResidencia] = useState("");
+  const [tipoPersonaError, setTipoPersonaError] = useState(false);
 
-  const [dynamicSegmentos, setDynamicSegmentos] = useState<string[]>([]); // Nuevo estado para segmentos dinámicos
+  const [dynamicSegmentos, setDynamicSegmentos] = useState<string[]>([]);
+  const [dynamicNacionalidades, setDynamicNacionalidades] = useState<string[]>([]);
+  const [dynamicResidencias, setDynamicResidencias] = useState<string[]>([]);
 
-  /** 🚀 Cargar opciones de Segmento desde la nueva API */
   useEffect(() => {
     fetch("http://localhost:5000/api/ConsultaCliente/segmentos-unicos")
       .then(response => response.json())
       .then((data: string[]) => {
-        console.log("✅ Segmentos dinámicos recibidos:", data);
-        setDynamicSegmentos(data.filter(Boolean)); // Asegurarse de filtrar cualquier valor nulo/vacío
+        setDynamicSegmentos(data.filter(Boolean));
       })
       .catch(error => console.error("❌ Error al cargar segmentos dinámicos:", error));
-  }, []); // Se ejecuta solo una vez al montar el componente
+
+    fetch("http://localhost:5000/api/ConsultaCliente/nacionalidad-unica")
+      .then(res => res.json())
+      .then((data: string[]) => {
+        setDynamicNacionalidades(data.filter(Boolean));
+      })
+      .catch(err => console.error("❌ Error al cargar nacionalidades únicas:", err));
+
+    fetch("http://localhost:5000/api/ConsultaCliente/residencia-unica")
+      .then(res => res.json())
+      .then((data: string[]) => {
+        setDynamicResidencias(data.filter(Boolean));
+      })
+      .catch(err => console.error("❌ Error al cargar residencias únicas:", err));
+  }, []);
 
   const aplicarFiltro = () => {
-    onFilter({ estado, segmento, tipoPersona });
+    if (!tipoPersona) {
+      setTipoPersonaError(true);
+      return;
+    }
+    setTipoPersonaError(false);
+
+    onFilter({
+      estado,
+      segmento,
+      tipoPersona,
+      nacionalidad: nacionalidad.trim(),
+      residencia: residencia.trim()
+    });
   };
 
   const limpiarFiltros = () => {
     setEstado("");
     setSegmento("");
     setTipoPersona("");
-    onFilter({ estado: "", segmento: "", tipoPersona: "" }); // Notificar al componente padre que se limpiaron los filtros
+    setNacionalidad("");
+    setResidencia("");
+    setTipoPersonaError(false);
+    onFilter({ estado: "", segmento: "", tipoPersona: "", nacionalidad: "", residencia: "" });
   };
 
   return (
@@ -49,7 +98,7 @@ function FiltrosClientes({ onFilter }: { onFilter: (filtros: Filters) => void })
       {/* Estado */}
       <FormControl sx={{ minWidth: 160 }} size="small">
         <InputLabel id="estado-label">Estado</InputLabel>
-        <Select labelId="estado-label" value={estado} label="Estado" onChange={(e) => setEstado(e.target.value as string)}>
+        <Select labelId="estado-label" value={estado} label="Estado" onChange={(e) => setEstado(e.target.value)}>
           <MenuItem value="">Todos</MenuItem>
           {hardcodedEstados.map((est, index) => (
             <MenuItem key={index} value={est}>{est}</MenuItem>
@@ -57,10 +106,10 @@ function FiltrosClientes({ onFilter }: { onFilter: (filtros: Filters) => void })
         </Select>
       </FormControl>
 
-      {/* Segmento - Ahora usa los segmentos cargados dinámicamente */}
+      {/* Segmento */}
       <FormControl sx={{ minWidth: 160 }} size="small">
         <InputLabel id="segmento-label">Segmento</InputLabel>
-        <Select labelId="segmento-label" value={segmento} label="Segmento" onChange={(e) => setSegmento(e.target.value as string)}>
+        <Select labelId="segmento-label" value={segmento} label="Segmento" onChange={(e) => setSegmento(e.target.value)}>
           <MenuItem value="">Todos</MenuItem>
           {dynamicSegmentos.map((seg, index) => (
             <MenuItem key={index} value={seg}>{seg}</MenuItem>
@@ -69,22 +118,81 @@ function FiltrosClientes({ onFilter }: { onFilter: (filtros: Filters) => void })
       </FormControl>
 
       {/* Tipo de Persona */}
-      <FormControl sx={{ minWidth: 160 }} size="small">
+      <FormControl sx={{ minWidth: 160 }} size="small" error={tipoPersonaError}>
         <InputLabel id="tipoPersona-label">Tipo de Persona</InputLabel>
-        <Select labelId="tipoPersona-label" value={tipoPersona} label="Tipo de Persona" onChange={(e) => setTipoPersona(e.target.value as string)}>
-          <MenuItem value="">Todos</MenuItem>
+        <Select
+          labelId="tipoPersona-label"
+          value={tipoPersona}
+          label="Tipo de Persona"
+          onChange={(e) => {
+            setTipoPersona(e.target.value);
+            if (e.target.value) setTipoPersonaError(false);
+          }}
+        >
+          <MenuItem value="">Seleccione</MenuItem>
           {hardcodedTiposPersona.map((tipo, index) => (
             <MenuItem key={index} value={tipo}>{tipo}</MenuItem>
+          ))}
+        </Select>
+        {tipoPersonaError && <FormHelperText>Debe seleccionar un tipo de persona</FormHelperText>}
+      </FormControl>
+
+      {/* Nacionalidad */}
+      <FormControl sx={{ minWidth: 160 }} size="small">
+        <InputLabel id="nacionalidad-label">Nacionalidad</InputLabel>
+        <Select
+          labelId="nacionalidad-label"
+          value={nacionalidad}
+          label="Nacionalidad"
+          onChange={(e) => setNacionalidad(e.target.value)}
+          MenuProps={menuProps}
+        >
+          <MenuItem value="">Todas</MenuItem>
+          {dynamicNacionalidades.map((nac, index) => (
+            <MenuItem key={index} value={nac}>{nac}</MenuItem>
+          ))}
+        </Select>
+      </FormControl>
+
+      {/* Residencia */}
+      <FormControl sx={{ minWidth: 160 }} size="small">
+        <InputLabel id="residencia-label">Residencia</InputLabel>
+        <Select
+          labelId="residencia-label"
+          value={residencia}
+          label="Residencia"
+          onChange={(e) => setResidencia(e.target.value)}
+          MenuProps={menuProps}
+        >
+          <MenuItem value="">Todas</MenuItem>
+          {dynamicResidencias.map((res, index) => (
+            <MenuItem key={index} value={res}>{res}</MenuItem>
           ))}
         </Select>
       </FormControl>
 
       {/* Botones */}
       <Box sx={{ display: 'flex', gap: 1 }}>
-        <Button variant="contained" color="primary" onClick={aplicarFiltro} sx={{ minWidth: 120 }}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={aplicarFiltro}
+          sx={{ minWidth: 120 }}
+          //disabled={!tipoPersona}
+        >
           Filtrar
         </Button>
-        {/* El botón "Limpiar" ahora es "contained" con color "secondary" */}
+        <Tooltip
+          title={`El botón de filtrar se habilita solo cuando 'Tipo de Persona' es seleccionado. Puede aplicar más filtros o simplemente filtrar por 'Tipo de Persona'.
+Los resultados van a depender de 'Filas por página' en la parte inferior a la izquierda.`}
+          arrow
+          placement="top"
+        >
+          <IconButton size="small" sx={{ p: 0.5 }}>
+            <InfoOutlinedIcon color="action" fontSize="small" />
+          </IconButton>
+        </Tooltip>
+
         <Button variant="contained" color="secondary" onClick={limpiarFiltros} sx={{ minWidth: 120 }}>
           Limpiar
         </Button>

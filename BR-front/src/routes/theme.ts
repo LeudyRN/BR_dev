@@ -69,6 +69,20 @@ const theme = createTheme({
         },
       },
     },
+
+    // ✅ NUEVO: controla menú de selección en TablePagination
+    MuiSelect: {
+      defaultProps: {
+        MenuProps: {
+          PaperProps: {
+            style: {
+              maxHeight: 250,
+              width: 250,
+            },
+          },
+        },
+      },
+    },
   },
 });
 

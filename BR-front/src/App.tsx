@@ -7,6 +7,7 @@ import ConsultaClientes from "./routes/consultarClientes";
 import CambioSegmento from "./routes/cambioSegmento";
 import ActualizarBuro from "./routes/actualizarBuro";
 import CambioCategoriaRiesgo from "./routes/cambiarCategoriaRiesgo";
+import Portafolio from "./routes/ConsultarPortafolio";
 import logo from "./assets/logo.png";
 import "./App.css";
 
@@ -31,12 +32,13 @@ function App() {
                 </Typography>
               </Box>
 
-            {/* 🔹 Menú de Navegación con botones más estilizados */}
+            {/*  Menú de Navegación con botones más estilizados */}
             <nav style={{ display: "flex", gap: "30px" }}>
               <Link to="/"><Button color="inherit" sx={{ fontSize: "16px", fontWeight: "bold", color: "white" }}>CLIENTES</Button></Link>
               <Link to="/cambiar-segmento"><Button color="inherit" sx={{ fontSize: "16px", fontWeight: "bold", color: "white" }}>SEGMENTO</Button></Link>
               <Link to="/actualizar-buro"><Button color="inherit" sx={{ fontSize: "16px", fontWeight: "bold", color: "white" }}>BURO</Button></Link>
               <Link to="/cambiar-riesgo"><Button color="inherit" sx={{ fontSize: "16px", fontWeight: "bold", color: "white" }}>CATEGORIA DE RIESGO</Button></Link>
+              <Link to="/portafolio"><Button color="inherit" sx={{ fontSize: "16px", fontWeight: "bold", color: "white" }}>PORTAFOLIO</Button></Link>
             </nav>
           </Toolbar>
         </AppBar>
@@ -48,6 +50,7 @@ function App() {
             <Route path="/cambiar-segmento" element={<CambioSegmento />} />
             <Route path="/actualizar-buro" element={<ActualizarBuro />} />
             <Route path="/cambiar-riesgo" element={<CambioCategoriaRiesgo />} />
+            <Route path="/portafolio" element={<Portafolio />} />
           </Routes>
         </Container>
       </Router>

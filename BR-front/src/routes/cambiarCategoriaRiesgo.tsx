@@ -1,7 +1,6 @@
-import { useState } from "react";
-import { TextField, Button, Box, Paper, Typography, Divider, Tooltip, IconButton } from "@mui/material";
+import { useState, type SyntheticEvent } from "react";
+import { TextField, Button, Box, Paper, Typography, Divider, Tooltip, IconButton, Snackbar, Alert } from "@mui/material";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-//import axios from "axios";
 
 function CambioCategoriaRiesgo() {
   const [cedulaConsulta, setCedulaConsulta] = useState("");
@@ -9,50 +8,115 @@ function CambioCategoriaRiesgo() {
   const [cedulaActualizar, setCedulaActualizar] = useState("");
   const [nuevaCategoria, setNuevaCategoria] = useState("");
 
-  /** 🔹 Consultar el riesgo del cliente */
-const handleConsultarRiesgo = async () => {
-  try {
-    const response = await fetch(`/api/consultar-riesgo?cedula=${cedulaConsulta}`);
+  // Estados para Snackbar (notificaciones)
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "info" | "warning">("info");
 
-    if (!response.ok) throw new Error("Error al consultar riesgo.");
+  /**
+   * Muestra un mensaje en el Snackbar.
+   * @param {string} message - El mensaje a mostrar.
+   * @param {'success' | 'error' | 'info' | 'warning'} severity - La severidad del mensaje.
+   */
+  const showSnackbar = (message: string, severity: "success" | "error" | "info" | "warning") => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
 
-    const data = await response.json();
-    setRiesgoActual(data.riesgo);
-  } catch (error) {
-    console.error("❌ Error al consultar riesgo:", error);
-    alert("Hubo un error al consultar la categoría de riesgo.");
-  }
-};
+  /**
+   * Cierra el Snackbar.
+   * @param {SyntheticEvent | Event} [event] - Objeto del evento (opcional).
+   * @param {string} [reason] - Razón por la que se cierra el Snackbar (opcional).
+   */
+  const handleCloseSnackbar = (event?: SyntheticEvent | Event, reason?: string) => {
+    if (reason === 'clickaway') {
+      return;
+    }
+    setSnackbarOpen(false);
+  };
+
+  /** 🔹 Consultar la categoría de riesgo del cliente */
+  const handleConsultarRiesgo = async () => {
+    const trimmedCedulaConsulta = cedulaConsulta.trim();
+    if (!trimmedCedulaConsulta) {
+      showSnackbar("Por favor, introduzca una cédula para consultar.", "warning");
+      return;
+    }
+
+    try {
+      console.log(`DEBUG_FRONTEND: Consultando riesgo para cédula: '${trimmedCedulaConsulta}'`);
+      // URL CORRECTA para GET: /api/categoria-riesgo/:cedula
+      const response = await fetch(`http://localhost:5000/api/categoria-riesgo/${encodeURIComponent(trimmedCedulaConsulta)}`);
+
+      if (!response.ok) {
+        try {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`);
+        } catch (jsonError) {
+            throw new Error(`Error ${response.status}: ${response.statusText}. Respuesta no válida o vacía.`);
+        }
+      }
+
+      const data = await response.json();
+      setRiesgoActual(data.riesgo || "No encontrado");
+      setCedulaActualizar(trimmedCedulaConsulta); // Precargar cédula para actualizar
+      setNuevaCategoria(data.riesgo || ""); // Precargar categoría actual para modificar
+      showSnackbar("Categoría de riesgo consultada correctamente.", "success");
+    } catch (error: unknown) {
+      console.error("❌ Error al consultar riesgo:", error);
+      showSnackbar(`Hubo un error al consultar la categoría de riesgo: ${(error as Error).message}`, "error");
+    }
+  };
 
   /** 🔹 Cambiar la categoría de riesgo */
- const handleCambiarCategoria = async () => {
-  try {
-    const response = await fetch("/api/cambiar-riesgo", {
-      method: "PUT",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ cedula: cedulaActualizar, nuevaCategoria })
-    });
+  const handleCambiarCategoria = async () => {
+    const trimmedCedulaActualizar = cedulaActualizar.trim();
+    const trimmedNuevaCategoria = nuevaCategoria.trim();
 
-    if (!response.ok) throw new Error("Error en la actualización.");
+    if (!trimmedCedulaActualizar || !trimmedNuevaCategoria) {
+      showSnackbar("Debe proporcionar cédula y nueva categoría.", "warning");
+      return;
+    }
 
-    alert("¡Categoría de riesgo actualizada correctamente!");
-    setRiesgoActual(nuevaCategoria);
-  } catch (error) {
-    console.error("❌ Error al cambiar categoría de riesgo:", error);
-    alert("Hubo un error al actualizar la categoría.");
-  }
-};
+    console.log(`DEBUG_FRONTEND: Actualizando riesgo para cédula: '${trimmedCedulaActualizar}' con nueva categoría: '${trimmedNuevaCategoria}'`);
+    try {
+      // URL CORRECTA para PUT: /api/categoria-riesgo/
+      const response = await fetch("http://localhost:5000/api/categoria-riesgo/", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cedula: trimmedCedulaActualizar, nuevaCategoria: trimmedNuevaCategoria })
+      });
+
+      if (!response.ok) {
+        try {
+            const errorData = await response.json();
+            throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`);
+        } catch (jsonError) {
+            throw new Error(`Error ${response.status}: ${response.statusText}. Respuesta no válida o vacía.`);
+        }
+      }
+
+      showSnackbar("¡Categoría de riesgo actualizada correctamente!", "success");
+      setRiesgoActual(trimmedNuevaCategoria); // Actualiza el riesgo mostrado
+      setCedulaConsulta(""); // Limpia campos después de actualizar
+      setCedulaActualizar("");
+      setNuevaCategoria("");
+    } catch (error: unknown) {
+      console.error("❌ Error al cambiar categoría de riesgo:", error);
+      showSnackbar(`Hubo un error al actualizar la categoría: ${(error as Error).message}`, "error");
+    }
+  };
 
   return (
-     <Box sx={{
-        minHeight: "90vh",
-        marginTop: "30px",
-        p: 1,
-        backgroundColor: "background.default",
-        width: "1200px",
-        marginLeft: "50vh"
-       }}
-    >
+    <Box sx={{
+      minHeight: "90vh",
+      p: 1,
+      backgroundColor: "background.default",
+      width: "1200px",
+      marginLeft: "40vh"
+    }}>
+
       <Paper elevation={3} sx={{ maxWidth: 1200, mx: "auto", p: 4, borderRadius: 4 }}>
         <Typography variant="h5" fontWeight="bold" gutterBottom color="primary" textAlign="center">
           Gestión de Categoría de Riesgo
@@ -136,6 +200,13 @@ const handleConsultarRiesgo = async () => {
           Actualizar Categoría
         </Button>
       </Paper>
+
+      {/* Snackbar para notificaciones */}
+      <Snackbar open={snackbarOpen} autoHideDuration={6000} onClose={handleCloseSnackbar}>
+        <Alert onClose={handleCloseSnackbar} severity={snackbarSeverity} sx={{ width: '100%' }}>
+          {snackbarMessage}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 }
